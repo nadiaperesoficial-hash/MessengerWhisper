@@ -6,21 +6,19 @@ if (localPropertiesFile.exists()) {
     }
 }
 
+// Em ambientes de CI/CD (GitHub Actions), o caminho do SDK é gerido pelo plugin
+// por isso tornamos a busca mais tolerante
 def flutterRoot = localProperties.getProperty('flutter.sdk')
-if (flutterRoot == null) {
-    throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
+
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    id "dev.flutter.flutter-gradle-plugin"
 }
 
-apply plugin: 'com.android.application'
-// Use kotlin se o seu projeto usar, caso contrário mantenha apenas o plugin do flutter
-apply plugin: 'kotlin-android' 
-apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
-
 android {
-    // Atualizado para uma versão compatível com Flutter atual
-    compileSdkVersion 34 
-
     namespace "com.nitinproject.whatsappredesign"
+    compileSdkVersion 34
 
     defaultConfig {
         applicationId "com.nitinproject.whatsappredesign"
@@ -28,8 +26,6 @@ android {
         targetSdkVersion 34
         versionCode 1
         versionName "1.0"
-        
-        // Removido o testInstrumentationRunner legado
     }
 
     buildTypes {
@@ -49,5 +45,5 @@ flutter {
 }
 
 dependencies {
-    // Removidas as dependências 'com.android.support' que causavam o erro de AndroidX
+    // Adicione suas dependências aqui se necessário
 }
