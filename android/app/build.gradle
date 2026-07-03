@@ -19,6 +19,7 @@ def flutterVersionName = localProperties.getProperty("flutter.versionName") ?: "
 android {
     namespace "com.nitinproject.whatsappredesign"
     compileSdk 34
+    ndkVersion "25.1.8937393"
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -49,8 +50,13 @@ android {
     }
 }
 
+// Necessário: expõe flutter.compileSdkVersion / minSdkVersion / targetSdkVersion
+// pros plugins-dependência (app_links, etc.) conseguirem ler.
 flutter {
     source "../.."
+    compileSdkVersion 34
+    minSdkVersion 23
+    targetSdkVersion 34
 }
 
 dependencies {
