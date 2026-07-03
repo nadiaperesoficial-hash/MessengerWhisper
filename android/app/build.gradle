@@ -44,19 +44,13 @@ android {
             // build debug puro, usa o keystore de debug automático do SDK
         }
         release {
-            // ainda sem keystore de release; builda assinado como debug por enquanto
             signingConfig signingConfigs.debug
         }
     }
 }
 
-// Necessário: expõe flutter.compileSdkVersion / minSdkVersion / targetSdkVersion
-// pros plugins-dependência (app_links, etc.) conseguirem ler.
 flutter {
     source "../.."
-    compileSdkVersion 34
-    minSdkVersion 23
-    targetSdkVersion 34
 }
 
 dependencies {
