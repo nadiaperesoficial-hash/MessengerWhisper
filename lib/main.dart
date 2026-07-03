@@ -1,136 +1,150 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'core/config/env.dart';
+import 'core/theme/app_theme.dart';
+import 'screens/auth/login_screen.dart';
 import 'screens/home.dart';
 import 'screens/calls.dart';
 import 'screens/camera.dart';
 import 'screens/stories.dart';
 import 'screens/contacts.dart';
 
-void main() => runApp(new MyApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize(
+    url: Env.supabaseUrl,
+    anonKey: Env.supabaseAnonKey,
+  );
+
+  runApp(const MyApp());
+}
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
+    return MaterialApp(
       title: '',
       debugShowCheckedModeBanner: false,
-      theme: new ThemeData(
-        primaryColor: const Color(0xFF2845E7),
-        primaryColorDark: const Color(0xFF2845E7),
-      ),
-      home: new DashboardScreen(title: ''),
+      theme: AppTheme.light,
+      home: const AuthGate(),
+    );
+  }
+}
+
+/// Decide se mostra Login ou o Dashboard, com base na sessão do Supabase.
+class AuthGate extends StatelessWidget {
+  const AuthGate({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<AuthState>(
+      stream: Supabase.instance.client.auth.onAuthStateChange,
+      builder: (context, snapshot) {
+        final session = Supabase.instance.client.auth.currentSession;
+        if (session != null) {
+          return const DashboardScreen(title: '');
+        }
+        return const LoginScreen();
+      },
     );
   }
 }
 
 class DashboardScreen extends StatefulWidget {
-  DashboardScreen({Key key, this.title}) : super(key: key);
+  const DashboardScreen({super.key, required this.title});
 
   final String title;
 
   @override
-  _DashboardScreenState createState() => new _DashboardScreenState();
+  State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  PageController _pageController;
+  late PageController _pageController;
   int _page = 0;
 
   @override
   void initState() {
     super.initState();
-    _pageController = new PageController();
+    _pageController = PageController();
   }
 
   @override
   void dispose() {
-    super.dispose();
     _pageController.dispose();
+    super.dispose();
   }
 
   void navigationTapped(int page) {
-    // Animating to the page.
-    // You can use whatever duration and curve you like
-    _pageController.animateToPage(page,
-        duration: const Duration(milliseconds: 10), curve: Curves.linear);
+    _pageController.animateToPage(
+      page,
+      duration: const Duration(milliseconds: 10),
+      curve: Curves.linear,
+    );
   }
 
   void onPageChanged(int page) {
     setState(() {
-      this._page = page;
+      _page = page;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-      body: new PageView(
-        children: [
-          new Home("Home"),
-          new Calls("Calls"),
-          new Camera("Camera screen"),
-          new Stories("Stories screen"),
-          new Contacts("Contacts screen"),
+    return Scaffold(
+      body: PageView(
+        children: const [
+          Home("Home"),
+          Calls("Calls"),
+          Camera("Camera screen"),
+          Stories("Stories screen"),
+          Contacts("Contacts screen"),
         ],
         onPageChanged: onPageChanged,
         controller: _pageController,
       ),
-      bottomNavigationBar: new Theme(
-        data: Theme.of(context).copyWith(
-          // sets the background color of the `BottomNavigationBar`
-          canvasColor: Colors.white,
-        ), // sets the inactive color of the `BottomNavigationBar`
-        child: new BottomNavigationBar(
+      bottomNavigationBar: Theme(
+        data: Theme.of(context).copyWith(canvasColor: Colors.white),
+        child: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
           fixedColor: const Color(0xFF2845E7),
           items: [
-            new BottomNavigationBarItem(
-              icon: new Icon(
-                Icons.home,
-              ),
-              title: new Text(
-                "Home",
-              ),
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: "Home",
             ),
-            new BottomNavigationBarItem(
-                icon: new Icon(
-                  Icons.call,
-                ),
-                title: new Text(
-                  "Calls",
-                )),
-            new BottomNavigationBarItem(
-                icon: new Icon(
-                  Icons.camera_alt,
-                ),
-                title: new Text(
-                  "Camera",
-                )),
-            new BottomNavigationBarItem(
-                icon: new Stack(children: <Widget>[
-                  new Icon(Icons.favorite),
-                  new Positioned(
-                      top: -1.0,
-                      right: -1.0,
-                      child: new Stack(
-                        children: <Widget>[
-                          new Icon(
-                            Icons.brightness_1,
-                            size: 12.0,
-                            color: const Color(0xFF2845E7),
-                          ),
-                        ],
-                      ))
-                ]),
-                title: new Text(
-                  "Stories",
-                )),
-            new BottomNavigationBarItem(
-                icon: new Icon(
-                  Icons.account_circle,
-                ),
-                title: new Text(
-                  "Contacts",
-                )),
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.call),
+              label: "Calls",
+            ),
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.camera_alt),
+              label: "Camera",
+            ),
+            BottomNavigationBarItem(
+              icon: Stack(
+                children: const <Widget>[
+                  Icon(Icons.favorite),
+                  Positioned(
+                    top: -1.0,
+                    right: -1.0,
+                    child: Icon(
+                      Icons.brightness_1,
+                      size: 12.0,
+                      color: Color(0xFF2845E7),
+                    ),
+                  ),
+                ],
+              ),
+              label: "Stories",
+            ),
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.account_circle),
+              label: "Contacts",
+            ),
           ],
           onTap: navigationTapped,
           currentIndex: _page,
