@@ -1,0 +1,52 @@
+name: Build APK Debug
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    name: Build APK (debug)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Configurar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Instalar dependências
+        run: flutter pub get
+
+      - name: Restaurar google-services.json (Firebase)
+        run: |
+          echo "${{ secrets.FIREBASE_GOOGLE_SERVICES_JSON }}" | base64 -d > android/app/google-services.json
+
+      - name: Build APK debug
+        run: |
+          flutter build apk --debug \
+            --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
+            --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }} \
+            --dart-define=AGORA_APP_ID=${{ secrets.AGORA_APP_ID }} \
+            --dart-define=GIPHY_API_KEY=${{ secrets.GIPHY_API_KEY }}
+
+      - name: Upload APK como artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 14
