@@ -1,13 +1,9 @@
 package com.nitinproject.whatsappredesign;
 
-import android.os.Bundle;
-import io.flutter.app.FlutterActivity;
-import io.flutter.plugins.GeneratedPluginRegistrant;
+import io.flutter.embedding.android.FlutterActivity;
 
 public class MainActivity extends FlutterActivity {
-  @Override
-  protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    GeneratedPluginRegistrant.registerWith(this);
-  }
+    // No padrão moderno de Flutter (v2 embedding), 
+    // a classe base FlutterActivity já gerencia automaticamente 
+    // o ciclo de vida e o registro de plugins.
 }
