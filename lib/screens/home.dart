@@ -3,70 +3,86 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:whatsapp_redesign/model/chat_model.dart';
 import 'package:whatsapp_redesign/model/stories_model.dart';
+import '../core/theme/app_theme.dart';
+import 'new_chat_screen.dart';
 
 class Home extends StatelessWidget {
   final String listType;
-  Home(this.listType);
+  Home(this.listType, {super.key});
 
   @override
   Widget build(BuildContext context) {
-    final _width = MediaQuery.of(context).size.width;
-    final _height = MediaQuery.of(context).size.height;
-    return new Scaffold(
+    return Scaffold(
       backgroundColor: Colors.grey[200],
-      appBar: new AppBar(
-        title: new Text(
-          listType,
-          style: new TextStyle(color: const Color(0xFFFFFFFF)),
+      appBar: AppBar(
+        title: const Text(
+          'Whisper',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 24,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.3,
+            fontFamily: 'Roboto',
+          ),
         ),
-        titleSpacing: -1.0,
-        leading:
-            new IconButton(icon: const Icon(Icons.search), onPressed: () {}),
+        titleSpacing: 16.0,
+        automaticallyImplyLeading: false,
         actions: <Widget>[
-          new IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
+          IconButton(icon: const Icon(Icons.search), onPressed: () {}),
+          IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
         ],
       ),
-      body: new Column(
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: AppColors.primary,
+        child: const Icon(Icons.chat, color: Colors.white),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const NewChatScreen()),
+          );
+        },
+      ),
+      body: Column(
         children: <Widget>[
-          new Padding(padding: const EdgeInsets.fromLTRB(0.0, 3.0, 0.0, 8.0)),
-          new Container(
+          const Padding(padding: EdgeInsets.fromLTRB(0.0, 3.0, 0.0, 8.0)),
+          Container(
             height: 220.0,
             color: Colors.grey[200],
             child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: storiesMockData.length,
-                itemBuilder: (context, int position) => new Column(
+                itemBuilder: (context, int position) => Column(
                       children: <Widget>[
-                        new Padding(
+                        Padding(
                           padding:
                               const EdgeInsets.fromLTRB(5.0, 5.0, 5.0, 5.0),
-                          child: new Container(
+                          child: Container(
                             color: Colors.grey[200],
-                            width: 100.0, //story container width
-                            height: 210.0, //story container height
-                            child: new Stack(
+                            width: 100.0,
+                            height: 210.0,
+                            child: Stack(
                               alignment: Alignment.center,
                               children: <Widget>[
-                                new Column(
+                                Column(
                                   children: <Widget>[
-                                    new Container(
-                                      decoration: new BoxDecoration(
-                                          image: new DecorationImage(
+                                    Container(
+                                      decoration: BoxDecoration(
+                                          image: DecorationImage(
                                               image:
-                                                  new CachedNetworkImageProvider(
+                                                  CachedNetworkImageProvider(
                                                       storiesMockData[position]
                                                           .storyImageUrl),
                                               fit: BoxFit.cover),
                                           borderRadius:
-                                              new BorderRadius.circular(10.0)),
-                                      width: 100.0, //story image width
+                                              BorderRadius.circular(10.0)),
+                                      width: 100.0,
                                       height: 140.0,
-                                      child: new Padding(
+                                      child: Padding(
                                         padding: const EdgeInsets.fromLTRB(
                                             5.0, 85.0, 5.0, 5.0),
-                                        child: new Text(
+                                        child: Text(
                                           storiesMockData[position].name,
-                                          style: new TextStyle(
+                                          style: const TextStyle(
                                               fontWeight: FontWeight.bold,
                                               fontSize: 18.0,
                                               fontStyle: FontStyle.normal,
@@ -75,50 +91,51 @@ class Home extends StatelessWidget {
                                           overflow: TextOverflow.ellipsis,
                                           textAlign: TextAlign.center,
                                         ),
-                                      ), //story image height
+                                      ),
                                     ),
                                   ],
                                 ),
-                                new Padding(
-                                  child: new PhysicalModel(
-                                    borderRadius:
-                                        new BorderRadius.circular(25.0),
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                      5.0, 65.0, 5.0, 0.0),
+                                  child: PhysicalModel(
+                                    borderRadius: BorderRadius.circular(25.0),
                                     color: Colors.transparent,
-                                    child: new Container(
+                                    child: Container(
                                       width: 50.0,
                                       height: 50.0,
-                                      decoration: new BoxDecoration(
-                                        image: new DecorationImage(
-                                            image:
-                                                new CachedNetworkImageProvider(
-                                                    storiesMockData[position]
-                                                        .profileImageUrl),
+                                      decoration: BoxDecoration(
+                                        image: DecorationImage(
+                                            image: CachedNetworkImageProvider(
+                                                storiesMockData[position]
+                                                    .profileImageUrl),
                                             fit: BoxFit.cover),
                                         borderRadius:
-                                            new BorderRadius.circular(25.0),
-                                        border: new Border.all(
+                                            BorderRadius.circular(25.0),
+                                        border: Border.all(
                                           width: 3.0,
-                                          color: storiesMockData[position].storySeen ? Colors.grey : const Color(0xFF2845E7)
+                                          color: storiesMockData[position]
+                                                  .storySeen
+                                              ? Colors.grey
+                                              : const Color(0xFF2845E7),
                                         ),
                                       ),
                                     ),
                                   ),
-                                  padding: const EdgeInsets.fromLTRB(
-                                      5.0, 65.0, 5.0, 0.0),
                                 ),
-                                new Padding(
+                                Padding(
                                     padding: const EdgeInsets.fromLTRB(
                                         5.0, 140.0, 5.0, 0.0),
-                                    child: new Center(
-                                      child: new Text(
+                                    child: Center(
+                                      child: Text(
                                         storiesMockData[position].day,
                                       ),
                                     )),
-                                new Padding(
+                                Padding(
                                   padding: const EdgeInsets.fromLTRB(
                                       5.0, 172.0, 5.0, 0.0),
                                   child:
-                                      new Text(storiesMockData[position].time),
+                                      Text(storiesMockData[position].time),
                                 )
                               ],
                             ),
@@ -127,39 +144,39 @@ class Home extends StatelessWidget {
                       ],
                     )),
           ),
-          new Expanded(
+          Expanded(
             child: ListView.builder(
                 itemBuilder: (context, position) {
-                  return new Padding(
+                  return Padding(
                       padding: const EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
-                      child: new Card(
+                      child: Card(
                           elevation: 1.0,
                           color: const Color(0xFFFFFFFF),
-                          child: new ListTile(
-                            leading: new CircleAvatar(
-                              backgroundImage: new CachedNetworkImageProvider(ChatMockData[position]
-                                                        .imageUrl),
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundImage: CachedNetworkImageProvider(
+                                  ChatMockData[position].imageUrl),
                             ),
-                            title: new Row(
+                            title: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: <Widget>[
-                                new Text(
+                                Text(
                                   ChatMockData[position].name,
-                                  style: new TextStyle(
+                                  style: const TextStyle(
                                       fontWeight: FontWeight.bold),
                                 ),
-                                new Text(
+                                Text(
                                   ChatMockData[position].time,
-                                  style: new TextStyle(
+                                  style: const TextStyle(
                                       color: Colors.grey, fontSize: 14.0),
                                 ),
                               ],
                             ),
-                            subtitle: new Container(
+                            subtitle: Container(
                               padding: const EdgeInsets.only(top: 5.0),
-                              child: new Text(
+                              child: Text(
                                 ChatMockData[position].message,
-                                style: new TextStyle(
+                                style: const TextStyle(
                                     color: Colors.grey, fontSize: 15.0),
                               ),
                             ),
