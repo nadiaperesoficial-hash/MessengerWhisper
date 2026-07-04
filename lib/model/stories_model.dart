@@ -6,17 +6,18 @@ class StoriesModel {
   final String profileImageUrl;
   bool storySeen;
 
-  StoriesModel(
-      {this.name,
-      this.day,
-      this.time,
-      this.storyImageUrl,
-      this.profileImageUrl,
-      this.storySeen});
+  StoriesModel({
+    required this.name,
+    required this.day,
+    required this.time,
+    required this.storyImageUrl,
+    required this.profileImageUrl,
+    required this.storySeen,
+  });
 }
 
 List<StoriesModel> storiesMockData = [
-  new StoriesModel(
+  StoriesModel(
       name: "My Story",
       day: "Tap to",
       time: "add Story",
@@ -25,7 +26,7 @@ List<StoriesModel> storiesMockData = [
       profileImageUrl:
           "https://images.unsplash.com/photo-1540587659271-5a67befab04a?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=ac7169ee44a4813f7f832b87ed1f7d22&auto=format&fit=crop&w=500&q=60",
       storySeen: false),
-  new StoriesModel(
+  StoriesModel(
       name: "Sid",
       day: "Today",
       time: "12:30 PM",
@@ -34,7 +35,7 @@ List<StoriesModel> storiesMockData = [
       profileImageUrl:
           "https://images.unsplash.com/photo-1540561366368-01757f6d4cf7?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=1b1e1584477cc73bc8a29e5d56257932&auto=format&fit=crop&w=500&q=60",
       storySeen: true),
-  new StoriesModel(
+  StoriesModel(
       name: "Akash",
       day: "Yesterday",
       time: "1:00 AM",
@@ -43,7 +44,7 @@ List<StoriesModel> storiesMockData = [
       profileImageUrl:
           "https://images.unsplash.com/photo-1526887520775-4b14b8aed897?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=6863708b5fd99da795349ec8307699d2&auto=format&fit=crop&w=500&q=60",
       storySeen: false),
-  new StoriesModel(
+  StoriesModel(
       name: "Ayushi",
       day: "Today",
       time: "10:38 PM",
@@ -52,7 +53,7 @@ List<StoriesModel> storiesMockData = [
       profileImageUrl:
           "https://images.unsplash.com/photo-1540468587468-8c1010286dc5?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=bdce700d2682692608d3ee8432300cc4&auto=format&fit=crop&w=500&q=60",
       storySeen: false),
-  new StoriesModel(
+  StoriesModel(
       name: "Abhishek",
       day: "Yesterday",
       time: "10:46 PM",
@@ -61,7 +62,7 @@ List<StoriesModel> storiesMockData = [
       profileImageUrl:
           "https://images.unsplash.com/photo-1529377355816-041199697c37?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=889d8b218f60040d71c5d097626790ef&auto=format&fit=crop&w=500&q=60",
       storySeen: true),
-  new StoriesModel(
+  StoriesModel(
       name: "Rekha",
       day: "Yesterday",
       time: "12:30 PM",
@@ -70,7 +71,7 @@ List<StoriesModel> storiesMockData = [
       profileImageUrl:
           "https://images.unsplash.com/photo-1539812343312-51c943aed7ca?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=b51361df5b4f7bb58a998b82fba1f0ed&auto=format&fit=crop&w=500&q=60",
       storySeen: false),
-  new StoriesModel(
+  StoriesModel(
       name: "Akash",
       day: "Today",
       time: "1:00 AM",
@@ -79,7 +80,7 @@ List<StoriesModel> storiesMockData = [
       profileImageUrl:
           "https://images.unsplash.com/photo-1539812343312-51c943aed7ca?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=b51361df5b4f7bb58a998b82fba1f0ed&auto=format&fit=crop&w=500&q=60",
       storySeen: true),
-  new StoriesModel(
+  StoriesModel(
       name: "Ayushi",
       day: "Today",
       time: "10:38 PM",
@@ -88,7 +89,7 @@ List<StoriesModel> storiesMockData = [
       profileImageUrl:
           "https://images.unsplash.com/photo-1539721629624-e509f6cbfe37?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=6106517ed2b161aa778c57053dd0cfa6&auto=format&fit=crop&w=500&q=60",
       storySeen: false),
-  new StoriesModel(
+  StoriesModel(
       name: "Abhishek",
       day: "Yesterday",
       time: "10:46 PM",
@@ -97,7 +98,7 @@ List<StoriesModel> storiesMockData = [
       profileImageUrl:
           "https://images.unsplash.com/photo-1539694023178-80dde47136c1?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=63f441f3c0115e3a3882605e648882d3&auto=format&fit=crop&w=500&q=60",
       storySeen: true),
-  new StoriesModel(
+  StoriesModel(
       name: "Ayushi",
       day: "Today",
       time: "10:38 PM",
@@ -106,7 +107,7 @@ List<StoriesModel> storiesMockData = [
       profileImageUrl:
           "https://images.unsplash.com/photo-1540468587468-8c1010286dc5?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=bdce700d2682692608d3ee8432300cc4&auto=format&fit=crop&w=500&q=60",
       storySeen: false),
-  new StoriesModel(
+  StoriesModel(
       name: "Abhishek",
       day: "Yesterday",
       time: "10:46 PM",
@@ -115,7 +116,7 @@ List<StoriesModel> storiesMockData = [
       profileImageUrl:
           "https://images.unsplash.com/photo-1529377355816-041199697c37?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=889d8b218f60040d71c5d097626790ef&auto=format&fit=crop&w=500&q=60",
       storySeen: true),
-  new StoriesModel(
+  StoriesModel(
       name: "Rekha",
       day: "Yesterday",
       time: "12:30 PM",
@@ -124,7 +125,7 @@ List<StoriesModel> storiesMockData = [
       profileImageUrl:
           "https://images.unsplash.com/photo-1539812343312-51c943aed7ca?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=b51361df5b4f7bb58a998b82fba1f0ed&auto=format&fit=crop&w=500&q=60",
       storySeen: false),
-  new StoriesModel(
+  StoriesModel(
       name: "Akash",
       day: "Today",
       time: "1:00 AM",
@@ -133,7 +134,7 @@ List<StoriesModel> storiesMockData = [
       profileImageUrl:
           "https://images.unsplash.com/photo-1539812343312-51c943aed7ca?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=b51361df5b4f7bb58a998b82fba1f0ed&auto=format&fit=crop&w=500&q=60",
       storySeen: true),
-  new StoriesModel(
+  StoriesModel(
       name: "Ayushi",
       day: "Today",
       time: "10:38 PM",
@@ -142,7 +143,7 @@ List<StoriesModel> storiesMockData = [
       profileImageUrl:
           "https://images.unsplash.com/photo-1539721629624-e509f6cbfe37?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=6106517ed2b161aa778c57053dd0cfa6&auto=format&fit=crop&w=500&q=60",
       storySeen: false),
-  new StoriesModel(
+  StoriesModel(
       name: "Abhishek",
       day: "Yesterday",
       time: "10:46 PM",
