@@ -42,4 +42,15 @@ class ChatService {
 
     return chatId;
   }
+
+  /// Envia uma mensagem de texto simples numa conversa já existente.
+  Future<void> sendTextMessage(String chatId, String content) async {
+    final myId = _client.auth.currentUser!.id;
+    await _client.from('messages').insert({
+      'chat_id': chatId,
+      'sender_id': myId,
+      'content': content,
+      'type': 'text',
+    });
+  }
 }
