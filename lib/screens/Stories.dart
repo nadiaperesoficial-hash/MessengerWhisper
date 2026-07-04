@@ -4,6 +4,7 @@ import '../core/services/story_service.dart';
 import '../core/theme/app_theme.dart';
 import 'stories/add_story_screen.dart';
 import 'stories/text_story_screen.dart';
+import 'stories/story_viewer_screen.dart';
 
 class Stories extends StatefulWidget {
   Stories(this.listType, {super.key});
@@ -136,9 +137,15 @@ class _StoriesState extends State<Stories> {
                     title: Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
                     subtitle: Text('$count story${count > 1 ? "s" : ""}'),
                     onTap: () {
-                      // Visualizador de story ainda não construído — próximo passo.
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Visualizador de stories em breve.')),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => StoryViewerScreen(
+                            userId: s['user_id'],
+                            userName: name,
+                            userAvatarUrl: avatar,
+                          ),
+                        ),
                       );
                     },
                   );
