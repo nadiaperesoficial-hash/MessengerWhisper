@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../core/services/story_service.dart';
 import '../../core/theme/app_theme.dart';
@@ -22,17 +23,6 @@ class _StoryPreviewScreenState extends State<StoryPreviewScreen> {
   void dispose() {
     _captionController.dispose();
     super.dispose();
-  }
-
-  String get _durationLabel {
-    if (_duration.inHours == 6) return '6';
-    if (_duration.inHours == 12) return '12';
-    return '24';
-  }
-
-  Future<void> _pickDuration() async {
-    final result = await showDurationSheet(context, _duration);
-    if (result != null) setState(() => _duration = result);
   }
 
   Future<void> _publish() async {
@@ -101,37 +91,34 @@ class _StoryPreviewScreenState extends State<StoryPreviewScreen> {
                 child: Row(
                   children: [
                     Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.45),
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        child: TextField(
-                          controller: _captionController,
-                          style: const TextStyle(color: Colors.white),
-                          decoration: const InputDecoration(
-                            hintText: 'Adicionar legenda...',
-                            hintStyle: TextStyle(color: Colors.white70),
-                            border: InputBorder.none,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(30),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.25),
+                              borderRadius: BorderRadius.circular(30),
+                              border: Border.all(color: Colors.white.withOpacity(0.15)),
+                            ),
+                            child: TextField(
+                              controller: _captionController,
+                              style: const TextStyle(color: Colors.white),
+                              decoration: const InputDecoration(
+                                hintText: 'Adicionar legenda...',
+                                hintStyle: TextStyle(color: Colors.white70),
+                                border: InputBorder.none,
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
                     const SizedBox(width: 12),
-                    GestureDetector(
-                      onTap: _pickDuration,
-                      child: CircleAvatar(
-                        radius: 22,
-                        backgroundColor: Colors.black.withOpacity(0.45),
-                        child: Text(
-                          _durationLabel,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
+                    DurationPickerButton(
+                      duration: _duration,
+                      onChanged: (d) => setState(() => _duration = d),
                     ),
                   ],
                 ),
