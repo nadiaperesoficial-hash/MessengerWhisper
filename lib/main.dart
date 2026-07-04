@@ -34,7 +34,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-/// Decide se mostra Login ou o Dashboard, com base na sessão do Supabase.
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
 
@@ -96,7 +95,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: PageView(
-        children: const [
+        children: [
           Home("Home"),
           Calls("Calls"),
           Camera("Camera screen"),
