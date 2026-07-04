@@ -44,7 +44,7 @@ class StoryService {
     });
   }
 
-  /// Retorna as stories não expiradas, agrupadas por usuário (a mais recente primeiro em cada grupo).
+  /// Stories não expiradas, agrupadas por usuário (pra lista da tela Stories).
   Future<List<Map<String, dynamic>>> fetchGroupedStories() async {
     final rows = await _client
         .from('stories')
@@ -73,5 +73,45 @@ class StoryService {
     }
 
     return grouped.values.toList();
+  }
+
+  /// Todas as stories não expiradas de um usuário específico, em ordem cronológica
+  /// (mais antiga primeiro), pra abrir no viewer.
+  Future<List<Map<String, dynamic>>> fetchStoriesForUser(String userId) async {
+    final rows = await _client
+        .from('stories')
+        .select('*, profiles!inner(id, display_name, avatar_url)')
+        .eq('user_id', userId)
+        .gt('expires_at', DateTime.now().toIso8601String())
+        .order('created_at', ascending: true);
+
+    return List<Map<String, dynamic>>.from(rows);
+  }
+
+  Future<bool> isLikedByMe(String storyId) async {
+    final myId = _client.auth.currentUser!.id;
+    final rows = await _client
+        .from('story_likes')
+        .select()
+        .eq('story_id', storyId)
+        .eq('user_id', myId);
+    return (rows as List).isNotEmpty;
+  }
+
+  Future<void> likeStory(String storyId) async {
+    final myId = _client.auth.currentUser!.id;
+    await _client.from('story_likes').insert({
+      'story_id': storyId,
+      'user_id': myId,
+    });
+  }
+
+  Future<void> unlikeStory(String storyId) async {
+    final myId = _client.auth.currentUser!.id;
+    await _client
+        .from('story_likes')
+        .delete()
+        .eq('story_id', storyId)
+        .eq('user_id', myId);
   }
 }
