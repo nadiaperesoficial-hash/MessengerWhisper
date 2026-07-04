@@ -34,7 +34,11 @@ jobs:
 
       - name: Restaurar google-services.json (Firebase)
         run: |
-          echo "${{ secrets.FIREBASE_GOOGLE_SERVICES_JSON }}" | base64 -d > android/app/google-services.json
+          echo "${{ secrets.FIREBASE_GOOGLE_SERVICES_JSON }}" | tr -d '[:space:]' | base64 -d > android/app/google-services.json
+          echo "Validando JSON gerado:"
+          head -c 100 android/app/google-services.json
+          echo ""
+          python3 -c "import json; json.load(open('android/app/google-services.json'))" && echo "JSON válido ✅" || (echo "JSON inválido ❌" && exit 1)
 
       - name: Build APK debug
         run: |
