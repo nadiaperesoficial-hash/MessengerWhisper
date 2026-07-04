@@ -5,9 +5,8 @@ import 'core/theme/app_theme.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/home.dart';
 import 'screens/calls.dart';
-import 'screens/camera.dart';
 import 'screens/Stories.dart';
-import 'screens/Contacts.dart';
+import 'screens/profile/profile_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -98,9 +97,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           Home("Home"),
           Calls("Calls"),
-          Camera("Camera screen"),
           Stories("Stories screen"),
-          Contacts("Contacts screen"),
+          const ProfileScreen(),
         ],
         onPageChanged: onPageChanged,
         controller: _pageController,
@@ -110,39 +108,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
           fixedColor: const Color(0xFF2845E7),
-          items: [
-            const BottomNavigationBarItem(
+          items: const [
+            BottomNavigationBarItem(
               icon: Icon(Icons.home),
               label: "Home",
             ),
-            const BottomNavigationBarItem(
+            BottomNavigationBarItem(
               icon: Icon(Icons.call),
               label: "Calls",
             ),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.camera_alt),
-              label: "Camera",
-            ),
             BottomNavigationBarItem(
-              icon: Stack(
-                children: const <Widget>[
-                  Icon(Icons.favorite),
-                  Positioned(
-                    top: -1.0,
-                    right: -1.0,
-                    child: Icon(
-                      Icons.brightness_1,
-                      size: 12.0,
-                      color: Color(0xFF2845E7),
-                    ),
-                  ),
-                ],
-              ),
+              icon: Icon(Icons.auto_stories),
               label: "Stories",
             ),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.account_circle),
-              label: "Contacts",
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person),
+              label: "Perfil",
             ),
           ],
           onTap: navigationTapped,
