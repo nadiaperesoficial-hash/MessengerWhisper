@@ -18,8 +18,7 @@ For help getting started with Flutter, view our online
 
 ## Author
 
-Written by ME. You can [find me on Twitter](https://twitter.com/nitinmehta19).
-
+Written by ME. 
 ## Getting started with flutter
 
 For help getting started with Flutter, view our online
