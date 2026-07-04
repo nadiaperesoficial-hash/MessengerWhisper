@@ -18,7 +18,7 @@ def flutterVersionName = localProperties.getProperty("flutter.versionName") ?: "
 
 android {
     namespace "com.nitinproject.whatsappredesign"
-    compileSdk 34
+    compileSdk 36
     ndkVersion "25.1.8937393"
 
     compileOptions {
@@ -33,7 +33,7 @@ android {
     defaultConfig {
         applicationId "com.nitinproject.whatsappredesign"
         minSdk 23
-        targetSdk 34
+        targetSdk 36
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         multiDexEnabled true
