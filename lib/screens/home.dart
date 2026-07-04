@@ -61,12 +61,12 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
           'Whisper',
           style: TextStyle(
-            color: Colors.white,
+            color: AppColors.textPrimary,
             fontSize: 24,
             fontWeight: FontWeight.w700,
             letterSpacing: 0.3,
@@ -76,12 +76,12 @@ class _HomeState extends State<Home> {
         titleSpacing: 16.0,
         automaticallyImplyLeading: false,
         actions: <Widget>[
-          IconButton(icon: const Icon(Icons.search), onPressed: () {}),
-          IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
+          IconButton(icon: const Icon(Icons.search, color: AppColors.textPrimary), onPressed: () {}),
+          IconButton(icon: const Icon(Icons.more_vert, color: AppColors.textPrimary), onPressed: () {}),
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.primary,
+        backgroundColor: AppColors.lineGreen,
         child: const Icon(Icons.chat, color: Colors.white),
         onPressed: () {
           Navigator.push(
@@ -102,7 +102,7 @@ class _HomeState extends State<Home> {
 
                 return ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  itemCount: stories.length + 1, // +1 pro "Tap to add Story"
+                  itemCount: stories.length + 1,
                   itemBuilder: (context, position) {
                     if (position == 0) {
                       return _AddStoryTile(onAdded: _refreshStories);
@@ -114,8 +114,6 @@ class _HomeState extends State<Home> {
                       storyImageUrl: story['latest_type'] == 'image'
                           ? story['latest_media_url']
                           : null,
-                      backgroundColorHex:
-                          story['latest_type'] == 'text' ? null : null,
                       day: _formatDay(story['latest_created_at']),
                       time: _formatTime(story['latest_created_at']),
                       onTap: () async {
@@ -220,7 +218,7 @@ class _AddStoryTile extends StatelessWidget {
                   width: 50.0,
                   height: 50.0,
                   decoration: BoxDecoration(
-                    color: AppColors.primary,
+                    color: AppColors.lineGreen,
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 3.0),
                   ),
@@ -248,7 +246,6 @@ class _StoryTile extends StatelessWidget {
     required this.name,
     required this.profileImageUrl,
     required this.storyImageUrl,
-    required this.backgroundColorHex,
     required this.day,
     required this.time,
     required this.onTap,
@@ -257,7 +254,6 @@ class _StoryTile extends StatelessWidget {
   final String name;
   final String? profileImageUrl;
   final String? storyImageUrl;
-  final String? backgroundColorHex;
   final String day;
   final String time;
   final VoidCallback onTap;
