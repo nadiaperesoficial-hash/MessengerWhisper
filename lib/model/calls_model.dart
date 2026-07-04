@@ -6,17 +6,18 @@ class CallModel {
   final String callType;
   final String callSource;
 
-  CallModel(
-      {this.name,
-      this.day,
-      this.time,
-      this.profileImageUrl,
-      this.callType,
-      this.callSource});
+  CallModel({
+    required this.name,
+    required this.day,
+    required this.time,
+    required this.profileImageUrl,
+    required this.callType,
+    required this.callSource,
+  });
 }
 
 List<CallModel> callMockData = [
-  new CallModel(
+  CallModel(
       name: "Mom",
       day: "Today",
       time: "2:08 PM",
@@ -24,7 +25,7 @@ List<CallModel> callMockData = [
           "https://images.unsplash.com/photo-1529377355816-041199697c37?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=889d8b218f60040d71c5d097626790ef&auto=format&fit=crop&w=500&q=60",
       callType: "Incoming",
       callSource: "video"),
-  new CallModel(
+  CallModel(
       name: "Abhishek",
       day: "Yesterday",
       time: "8:12 AM",
@@ -32,7 +33,7 @@ List<CallModel> callMockData = [
           "https://images.unsplash.com/photo-1540857729466-9f99a00ef3e2?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=8f818dd6b476508da63edf49e4921764&auto=format&fit=crop&w=500&q=60",
       callType: "Outgoing",
       callSource: "voice"),
-      new CallModel(
+  CallModel(
       name: "John",
       day: "December 25",
       time: "9:45 PM",
@@ -40,7 +41,7 @@ List<CallModel> callMockData = [
           "https://images.unsplash.com/photo-1540881870814-a1098e2ef6d7?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=ce6f8e0adc2835ffea47adcaa9e90055&auto=format&fit=crop&w=500&q=60",
       callType: "Outgoing",
       callSource: "video"),
-       new CallModel(
+  CallModel(
       name: "Abhishek",
       day: "Yesterday",
       time: "8:12 AM",
@@ -48,7 +49,7 @@ List<CallModel> callMockData = [
           "https://images.unsplash.com/photo-1540857729466-9f99a00ef3e2?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=8f818dd6b476508da63edf49e4921764&auto=format&fit=crop&w=500&q=60",
       callType: "Incoming",
       callSource: "voice"),
-      new CallModel(
+  CallModel(
       name: "John",
       day: "December 25",
       time: "9:45 PM",
@@ -56,7 +57,7 @@ List<CallModel> callMockData = [
           "https://images.unsplash.com/photo-1540881870814-a1098e2ef6d7?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=ce6f8e0adc2835ffea47adcaa9e90055&auto=format&fit=crop&w=500&q=60",
       callType: "Incoming",
       callSource: "voice"),
-       new CallModel(
+  CallModel(
       name: "Abhishek",
       day: "Yesterday",
       time: "8:12 AM",
@@ -64,7 +65,7 @@ List<CallModel> callMockData = [
           "https://images.unsplash.com/photo-1540857729466-9f99a00ef3e2?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=8f818dd6b476508da63edf49e4921764&auto=format&fit=crop&w=500&q=60",
       callType: "Outgoing",
       callSource: "video"),
-      new CallModel(
+  CallModel(
       name: "John",
       day: "December 25",
       time: "9:45 PM",
@@ -72,7 +73,7 @@ List<CallModel> callMockData = [
           "https://images.unsplash.com/photo-1540881870814-a1098e2ef6d7?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=ce6f8e0adc2835ffea47adcaa9e90055&auto=format&fit=crop&w=500&q=60",
       callType: "Incoming",
       callSource: "video"),
-       new CallModel(
+  CallModel(
       name: "Abhishek",
       day: "Yesterday",
       time: "8:12 AM",
@@ -80,7 +81,7 @@ List<CallModel> callMockData = [
           "https://images.unsplash.com/photo-1540857729466-9f99a00ef3e2?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=8f818dd6b476508da63edf49e4921764&auto=format&fit=crop&w=500&q=60",
       callType: "Outgoing",
       callSource: "voice"),
-      new CallModel(
+  CallModel(
       name: "John",
       day: "December 25",
       time: "9:45 PM",
