@@ -1,4 +1,4 @@
-name: messenger_app
+name: whatsapp_redesign
 description: Chat app baseado em Flutter + Supabase + Agora + Firebase FCM
 publish_to: 'none'
 version: 1.0.0+1
