@@ -31,17 +31,6 @@ class _TextStoryScreenState extends State<TextStoryScreen> {
     super.dispose();
   }
 
-  String get _durationLabel {
-    if (_duration.inHours == 6) return '6';
-    if (_duration.inHours == 12) return '12';
-    return '24';
-  }
-
-  Future<void> _pickDuration() async {
-    final result = await showDurationSheet(context, _duration);
-    if (result != null) setState(() => _duration = result);
-  }
-
   Future<void> _publish() async {
     if (_textController.text.trim().isEmpty) return;
     setState(() => _publishing = true);
@@ -80,17 +69,9 @@ class _TextStoryScreenState extends State<TextStoryScreen> {
                   icon: const Icon(Icons.close, color: Colors.white),
                   onPressed: () => Navigator.pop(context),
                 ),
-                GestureDetector(
-                  onTap: _pickDuration,
-                  child: CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.black.withOpacity(0.3),
-                    child: Text(
-                      _durationLabel,
-                      style: const TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
-                  ),
+                DurationPickerButton(
+                  duration: _duration,
+                  onChanged: (d) => setState(() => _duration = d),
                 ),
               ],
             ),
