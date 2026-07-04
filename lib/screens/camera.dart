@@ -2,24 +2,25 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class Camera extends StatelessWidget {
-  Camera(this.listType);
+  Camera(this.listType, {super.key});
   final String listType;
+
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-      appBar: new AppBar(
-        title: new Text(
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
           listType,
-          style: new TextStyle(color: const Color(0xFFFFFFFF)),
+          style: const TextStyle(color: Color(0xFFFFFFFF)),
         ),
       ),
-      body: new Center(
-        child: new Column(
+      body: Center(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            new Text(
+            Text(
               listType,
-              style: Theme.of(context).textTheme.display1,
+              style: Theme.of(context).textTheme.displayLarge,
             ),
           ],
         ),
