@@ -77,53 +77,56 @@ class _DurationPickerButtonState extends State<DurationPickerButton> {
   }
 
   Widget _buildPopup() {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(14),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Container(
-          width: 180,
-          decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.55),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Colors.white.withOpacity(0.08)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ..._options.entries.map((entry) {
-                final selected = entry.value == widget.duration;
-                return InkWell(
-                  onTap: () {
-                    widget.onChanged(entry.value);
-                    _removeOverlay();
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                    child: Row(
-                      children: [
-                        Text(
-                          entry.key,
-                          style: TextStyle(
-                            color: selected ? const Color(0xFF3E9BFF) : Colors.white,
-                            fontSize: 16,
-                            fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+    return Material(
+      color: Colors.transparent,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            width: 180,
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.55),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.white.withOpacity(0.08)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ..._options.entries.map((entry) {
+                  final selected = entry.value == widget.duration;
+                  return InkWell(
+                    onTap: () {
+                      widget.onChanged(entry.value);
+                      _removeOverlay();
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                      child: Row(
+                        children: [
+                          Text(
+                            entry.key,
+                            style: TextStyle(
+                              color: selected ? const Color(0xFF3E9BFF) : Colors.white,
+                              fontSize: 16,
+                              fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
+                  );
+                }),
+                Divider(color: Colors.white.withOpacity(0.15), height: 1),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                  child: Text(
+                    'Escolha por quanto tempo\no story ficará visível.',
+                    style: TextStyle(color: Colors.white70, fontSize: 12),
                   ),
-                );
-              }),
-              Divider(color: Colors.white.withOpacity(0.15), height: 1),
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                child: Text(
-                  'Escolha por quanto tempo\no story ficará visível.',
-                  style: TextStyle(color: Colors.white70, fontSize: 12),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
