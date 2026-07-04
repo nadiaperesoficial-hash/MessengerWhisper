@@ -1,3 +1,6 @@
+// O buildscript não é mais necessário aqui, pois os plugins
+// estão sendo carregados via settings.gradle (pluginManagement).
+
 allprojects {
     repositories {
         google()
@@ -6,9 +9,11 @@ allprojects {
 }
 
 rootProject.buildDir = "../build"
+
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
 }
+
 subprojects {
     project.evaluationDependsOn(":app")
 }
