@@ -90,6 +90,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
+  Widget _navIcon(IconData icon, int index) {
+    final selected = _page == index;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+      decoration: BoxDecoration(
+        color: selected ? AppColors.navSelectedBg : Colors.transparent,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Icon(icon),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -107,22 +119,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
         data: Theme.of(context).copyWith(canvasColor: Colors.white),
         child: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
-          fixedColor: const Color(0xFF2845E7),
-          items: const [
+          backgroundColor: Colors.white,
+          selectedItemColor: AppColors.textPrimary,
+          unselectedItemColor: AppColors.textSecondary,
+          showUnselectedLabels: true,
+          items: [
             BottomNavigationBarItem(
-              icon: Icon(Icons.home),
+              icon: _navIcon(Icons.home, 0),
               label: "Home",
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.call),
+              icon: _navIcon(Icons.call, 1),
               label: "Calls",
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.auto_stories),
+              icon: _navIcon(Icons.auto_stories, 2),
               label: "Stories",
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.person),
+              icon: _navIcon(Icons.person, 3),
               label: "Perfil",
             ),
           ],
