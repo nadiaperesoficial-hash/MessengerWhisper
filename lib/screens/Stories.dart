@@ -35,9 +35,9 @@ class _StoriesState extends State<Stories> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
-      appBar: AppBar(
-        title: const Text('Stories', style: TextStyle(color: Colors.white)),
+      backgroundColor: Colors.white,
+      appBar: const AppBar(
+        title: Text('Stories'),
       ),
       floatingActionButton: Column(
         mainAxisSize: MainAxisSize.min,
@@ -58,7 +58,7 @@ class _StoriesState extends State<Stories> {
           const SizedBox(height: 12),
           FloatingActionButton(
             heroTag: 'story_camera_fab',
-            backgroundColor: AppColors.primary,
+            backgroundColor: AppColors.lineGreen,
             child: const Icon(Icons.camera_alt, color: Colors.white),
             onPressed: () async {
               await Navigator.push(
@@ -94,7 +94,7 @@ class _StoriesState extends State<Stories> {
                         bottom: 0,
                         child: Container(
                           decoration: const BoxDecoration(
-                            color: AppColors.primary,
+                            color: AppColors.lineGreen,
                             shape: BoxShape.circle,
                           ),
                           padding: const EdgeInsets.all(2),
