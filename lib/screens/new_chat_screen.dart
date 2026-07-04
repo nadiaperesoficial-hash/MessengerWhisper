@@ -14,13 +14,45 @@ class NewChatScreen extends StatefulWidget {
 class _NewChatScreenState extends State<NewChatScreen> {
   final _profileService = ProfileService();
   final _chatService = ChatService();
-  late Future<List<Map<String, dynamic>>> _contactsFuture;
+  final _searchController = TextEditingController();
+
+  List<Map<String, dynamic>> _allContacts = [];
+  List<Map<String, dynamic>> _filteredContacts = [];
+  bool _loading = true;
   bool _opening = false;
+  bool _searching = false;
 
   @override
   void initState() {
     super.initState();
-    _contactsFuture = _profileService.fetchContacts();
+    _loadContacts();
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  Future<void> _loadContacts() async {
+    final contacts = await _profileService.fetchContacts();
+    if (!mounted) return;
+    setState(() {
+      _allContacts = contacts;
+      _filteredContacts = contacts;
+      _loading = false;
+    });
+  }
+
+  void _onSearchChanged() {
+    final query = _searchController.text.trim().toLowerCase();
+    if (query.isEmpty) {
+      setState(() => _filteredContacts = _allContacts);
+      return;
+    }
+    setState(() {
+      _filteredContacts = _allContacts.where((c) {
+        final name = (c['display_name'] ?? '').toString().toLowerCase();
+        final email = (c['email'] ?? '').toString().toLowerCase();
+        // Prioriza nome; se não achar por nome, cai pra busca por e-mail.
+        return name.contains(query) || email.contains(query);
+      }).toList();
+    });
   }
 
   Future<void> _startChat(String contactId, String contactName) async {
@@ -28,8 +60,6 @@ class _NewChatScreenState extends State<NewChatScreen> {
     try {
       final chatId = await _chatService.getOrCreateOneToOneChat(contactId);
       if (!mounted) return;
-      // A tela de conversa individual ainda não existe no app —
-      // por enquanto confirmamos a criação. Próximo passo é construir essa tela.
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Conversa com $contactName pronta (id: $chatId)')),
       );
@@ -47,53 +77,69 @@ class _NewChatScreenState extends State<NewChatScreen> {
   }
 
   @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Nova conversa'),
-        backgroundColor: Colors.white,
-        elevation: 0.5,
-        iconTheme: const IconThemeData(color: AppColors.textPrimary),
-        titleTextStyle: const TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-      body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: _contactsFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('Nenhum contato encontrado ainda.'));
-          }
-          final contacts = snapshot.data!;
-          return ListView.builder(
-            itemCount: contacts.length,
-            itemBuilder: (context, i) {
-              final c = contacts[i];
-              final name = c['display_name'] ?? c['email'] ?? 'Usuário';
-              final avatar = c['avatar_url'];
-              return ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: AppColors.surface,
-                  backgroundImage: avatar != null
-                      ? CachedNetworkImageProvider(avatar)
-                      : null,
-                  child: avatar == null
-                      ? Text(name.substring(0, 1).toUpperCase())
-                      : null,
+        title: _searching
+            ? TextField(
+                controller: _searchController,
+                autofocus: true,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
+                  hintText: 'Buscar por nome ou e-mail',
+                  hintStyle: TextStyle(color: Colors.white70),
+                  border: InputBorder.none,
+                  filled: false,
                 ),
-                title: Text(name),
-                subtitle: Text(c['email'] ?? ''),
-                onTap: _opening ? null : () => _startChat(c['id'], name),
-              );
+              )
+            : const Text('Nova conversa'),
+        actions: [
+          IconButton(
+            icon: Icon(_searching ? Icons.close : Icons.search),
+            onPressed: () {
+              setState(() {
+                if (_searching) {
+                  _searchController.clear();
+                }
+                _searching = !_searching;
+              });
             },
-          );
-        },
+          ),
+        ],
       ),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : _filteredContacts.isEmpty
+              ? const Center(child: Text('Nenhum contato encontrado ainda.'))
+              : ListView.builder(
+                  itemCount: _filteredContacts.length,
+                  itemBuilder: (context, i) {
+                    final c = _filteredContacts[i];
+                    final name = c['display_name'] ?? c['email'] ?? 'Usuário';
+                    final avatar = c['avatar_url'];
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: AppColors.surface,
+                        backgroundImage: avatar != null
+                            ? CachedNetworkImageProvider(avatar)
+                            : null,
+                        child: avatar == null
+                            ? Text(name.substring(0, 1).toUpperCase())
+                            : null,
+                      ),
+                      title: Text(name),
+                      subtitle: Text(c['email'] ?? ''),
+                      onTap: _opening ? null : () => _startChat(c['id'], name),
+                    );
+                  },
+                ),
     );
   }
 }
