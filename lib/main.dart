@@ -6,8 +6,8 @@ import 'screens/auth/login_screen.dart';
 import 'screens/home.dart';
 import 'screens/calls.dart';
 import 'screens/camera.dart';
-import 'screens/stories.dart';
-import 'screens/contacts.dart';
+import 'screens/Stories.dart';
+import 'screens/Contacts.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
