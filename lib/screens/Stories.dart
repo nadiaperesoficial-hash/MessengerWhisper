@@ -17,19 +17,40 @@ class Stories extends StatefulWidget {
 class _StoriesState extends State<Stories> {
   final _storyService = StoryService();
   late Future<List<Map<String, dynamic>>> _storiesFuture;
+  String _debugInfo = 'Carregando diagnóstico...';
 
   @override
   void initState() {
     super.initState();
     _reload();
+    _runDiagnostics();
   }
 
   void _reload() {
     _storiesFuture = _storyService.fetchGroupedStories();
   }
 
+  Future<void> _runDiagnostics() async {
+    try {
+      final noJoin = await _storyService.debugCountStoriesNoJoin();
+      final withJoin = await _storyService.debugCountStoriesWithJoin();
+      if (mounted) {
+        setState(() {
+          _debugInfo = 'DEBUG: sem join = $noJoin | com join = $withJoin';
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _debugInfo = 'DEBUG erro: $e';
+        });
+      }
+    }
+  }
+
   Future<void> _refresh() async {
     setState(_reload);
+    await _runDiagnostics();
   }
 
   @override
@@ -37,7 +58,7 @@ class _StoriesState extends State<Stories> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('Stories'),
+        title: const Text('Stories'),
       ),
       floatingActionButton: Column(
         mainAxisSize: MainAxisSize.min,
@@ -78,9 +99,26 @@ class _StoriesState extends State<Stories> {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             }
+            if (snapshot.hasError) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(
+                    '${snapshot.error}',
+                    style: const TextStyle(color: AppColors.error),
+                  ),
+                ),
+              );
+            }
             final stories = snapshot.data ?? [];
             return ListView(
               children: [
+                Container(
+                  width: double.infinity,
+                  color: Colors.yellow[100],
+                  padding: const EdgeInsets.all(8),
+                  child: Text(_debugInfo, style: const TextStyle(fontSize: 12)),
+                ),
                 ListTile(
                   leading: Stack(
                     children: [
