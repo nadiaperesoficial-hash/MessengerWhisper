@@ -38,10 +38,10 @@ class _StoryPreviewScreenState extends State<StoryPreviewScreen> {
       );
       if (!mounted) return;
       Navigator.of(context).popUntil((route) => route.isFirst);
-    } catch (_) {
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Não foi possível publicar o story.'),
+        SnackBar(
+          content: Text('Erro: $e'),
           backgroundColor: AppColors.error,
         ),
       );
