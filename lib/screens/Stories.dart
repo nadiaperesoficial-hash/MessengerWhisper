@@ -36,7 +36,7 @@ class _StoriesState extends State<Stories> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: const AppBar(
+      appBar: AppBar(
         title: Text('Stories'),
       ),
       floatingActionButton: Column(
