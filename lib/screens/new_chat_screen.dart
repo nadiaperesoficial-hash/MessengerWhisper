@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/services/profile_service.dart';
 import '../core/services/chat_service.dart';
 import '../core/theme/app_theme.dart';
+import 'chat/chat_screen.dart';
 
 class NewChatScreen extends StatefulWidget {
   const NewChatScreen({super.key});
@@ -49,25 +50,30 @@ class _NewChatScreenState extends State<NewChatScreen> {
       _filteredContacts = _allContacts.where((c) {
         final name = (c['display_name'] ?? '').toString().toLowerCase();
         final email = (c['email'] ?? '').toString().toLowerCase();
-        // Prioriza nome; se não achar por nome, cai pra busca por e-mail.
         return name.contains(query) || email.contains(query);
       }).toList();
     });
   }
 
-  Future<void> _startChat(String contactId, String contactName) async {
+  Future<void> _startChat(String contactId, String contactName, String? contactAvatar) async {
     setState(() => _opening = true);
     try {
       final chatId = await _chatService.getOrCreateOneToOneChat(contactId);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Conversa com $contactName pronta (id: $chatId)')),
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ChatScreen(
+            chatId: chatId,
+            otherUserName: contactName,
+            otherUserAvatarUrl: contactAvatar,
+          ),
+        ),
       );
-      Navigator.pop(context);
-    } catch (_) {
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Não foi possível iniciar a conversa.'),
+        SnackBar(
+          content: Text('Erro ao iniciar conversa: $e'),
           backgroundColor: AppColors.error,
         ),
       );
@@ -136,7 +142,7 @@ class _NewChatScreenState extends State<NewChatScreen> {
                       ),
                       title: Text(name),
                       subtitle: Text(c['email'] ?? ''),
-                      onTap: _opening ? null : () => _startChat(c['id'], name),
+                      onTap: _opening ? null : () => _startChat(c['id'], name, avatar),
                     );
                   },
                 ),
