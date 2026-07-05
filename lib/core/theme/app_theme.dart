@@ -11,6 +11,9 @@ class AppColors {
   static const error = Color(0xFFE23744);
   static const border = Color(0xFFE4E6EF);
   static const navSelectedBg = Color(0xFFEDEDED);
+  static const chatBackground = Color(0xFFDCE7F5);
+  static const bubbleOutgoing = Color(0xFF00C300);
+  static const bubbleIncoming = Color(0xFFFFFFFF);
 }
 
 class AppTheme {
