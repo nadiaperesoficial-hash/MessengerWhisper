@@ -43,11 +43,11 @@ class ChatService {
     });
   }
 
-  /// Lista de conversas do usuário, com o outro participante e a última
-  /// mensagem conhecida (a mensagem em si pode já ter sido apagada do
-  /// servidor por entrega — nesse caso mostramos o que sobrou localmente
-  /// via message_service, então aqui a prévia pode vir vazia).
   Future<List<Map<String, dynamic>>> fetchMyChats() async {
+    return _withRetryOnClockSkew(() => _fetchMyChatsInternal());
+  }
+
+  Future<List<Map<String, dynamic>>> _fetchMyChatsInternal() async {
     final myId = _client.auth.currentUser!.id;
 
     final myParticipations =
@@ -95,5 +95,25 @@ class ChatService {
     });
 
     return results;
+  }
+
+  /// Tenta de novo automaticamente se o servidor rejeitar o token por
+  /// diferença momentânea de horário (erro PGRST303), renovando a sessão
+  /// antes de repetir a chamada — sem mostrar erro pro usuário nesse caso.
+  Future<T> _withRetryOnClockSkew<T>(Future<T> Function() action) async {
+    try {
+      return await action();
+    } on PostgrestException catch (e) {
+      if (e.code == 'PGRST303') {
+        await Future.delayed(const Duration(seconds: 2));
+        try {
+          await _client.auth.refreshSession();
+        } catch (_) {
+          // Ignora falha de refresh, tenta a ação de novo mesmo assim.
+        }
+        return await action();
+      }
+      rethrow;
+    }
   }
 }
