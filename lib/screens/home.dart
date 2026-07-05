@@ -197,16 +197,15 @@ class _AddStoryTile extends StatelessWidget {
       },
       child: Padding(
         padding: const EdgeInsets.fromLTRB(5.0, 5.0, 5.0, 5.0),
-        child: Container(
+        child: SizedBox(
           width: 100.0,
           height: 210.0,
-          color: Colors.grey[200],
           child: Stack(
             alignment: Alignment.center,
             children: <Widget>[
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: AppColors.surface,
                   borderRadius: BorderRadius.circular(10.0),
                 ),
                 width: 100.0,
@@ -264,8 +263,7 @@ class _StoryTile extends StatelessWidget {
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(5.0, 5.0, 5.0, 5.0),
-        child: Container(
-          color: Colors.grey[200],
+        child: SizedBox(
           width: 100.0,
           height: 210.0,
           child: Stack(
