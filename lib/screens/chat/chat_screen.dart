@@ -114,9 +114,10 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  Future<void> _pickImage(ImageSource source) async {
+  /// Câmera foi removida por enquanto — esse botão abre a galeria diretamente.
+  Future<void> _pickFromGallery() async {
     final picker = ImagePicker();
-    final picked = await picker.pickImage(source: source, imageQuality: 80);
+    final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
     if (picked == null) return;
     try {
       final file = File(picked.path);
@@ -151,9 +152,46 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  void _toggleEmoji() {
-    setState(() => _showEmoji = !_showEmoji);
-    if (_showEmoji) FocusScope.of(context).unfocus();
+  /// Um ícone só: pergunta rapidinho se é emoji (instantâneo, sem delay)
+  /// ou GIF (abre o buscador do Giphy).
+  void _handleEmojiOrGifTap() {
+    if (_showEmoji) {
+      setState(() => _showEmoji = false);
+      return;
+    }
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.emoji_emotions_outlined, color: AppColors.textPrimary),
+                title: const Text('Emoji'),
+                onTap: () {
+                  Navigator.pop(context);
+                  FocusScope.of(context).unfocus();
+                  setState(() => _showEmoji = true);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.gif_box_outlined, color: AppColors.textPrimary),
+                title: const Text('GIF'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickGif();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   void _insertEmoji(String emoji) {
@@ -252,10 +290,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 hasText: hasText,
                 isRecording: _isRecording,
                 emojiActive: _showEmoji,
-                onEmoji: _toggleEmoji,
-                onCamera: () => _pickImage(ImageSource.camera),
-                onGallery: () => _pickImage(ImageSource.gallery),
-                onGif: _pickGif,
+                onEmojiOrGif: _handleEmojiOrGifTap,
+                onGallery: _pickFromGallery,
                 onSend: _sendText,
                 onMicStart: (_) => setState(() => _isRecording = true),
                 onMicEnd: (_) {
