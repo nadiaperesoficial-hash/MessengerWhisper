@@ -4,9 +4,9 @@ import 'package:intl/intl.dart';
 import '../core/services/chat_service.dart';
 import '../core/services/story_service.dart';
 import '../core/theme/app_theme.dart';
+import '../widgets/stories/add_story_sheet.dart';
 import 'chat/chat_screen.dart';
 import 'new_chat_screen.dart';
-import 'stories/add_story_screen.dart';
 import 'stories/story_viewer_screen.dart';
 
 class Home extends StatefulWidget {
@@ -194,7 +194,9 @@ class _HomeState extends State<Home> {
                       final lastType = chat['last_message_type'];
                       final lastContent = lastType == 'image'
                           ? '📷 Foto'
-                          : (chat['last_message_content'] ?? 'Diga oi 👋');
+                          : lastType == 'gif'
+                              ? '🎞️ GIF'
+                              : (chat['last_message_content'] ?? 'Diga oi 👋');
                       final lastTime = _formatTime(chat['last_message_at']);
 
                       return Padding(
@@ -270,10 +272,7 @@ class _AddStoryTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () async {
-        await Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const AddStoryScreen()),
-        );
+        await showAddStorySheet(context);
         onAdded();
       },
       child: Padding(
