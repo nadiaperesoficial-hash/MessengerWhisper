@@ -61,83 +61,53 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  late PageController _pageController;
   int _page = 0;
 
-  @override
-  void initState() {
-    super.initState();
-    _pageController = PageController();
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
+  // Instanciadas UMA ÚNICA VEZ aqui. Como esses campos não mudam de
+  // identidade a cada build, o Flutter nunca chama initState de novo
+  // nelas — trocar de aba só muda qual delas fica visível no IndexedStack.
+  late final List<Widget> _tabs = [
+    Home("Home"),
+    Calls("Calls"),
+    Stories("Stories screen"),
+    const ProfileScreen(),
+  ];
 
   void navigationTapped(int page) {
-    _pageController.animateToPage(
-      page,
-      duration: const Duration(milliseconds: 10),
-      curve: Curves.linear,
-    );
-  }
-
-  void onPageChanged(int page) {
     setState(() {
       _page = page;
     });
   }
 
-  Widget _navIcon(IconData icon, int index) {
-    final selected = _page == index;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-      decoration: BoxDecoration(
-        color: selected ? AppColors.navSelectedBg : Colors.transparent,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Icon(icon),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PageView(
-        children: [
-          Home("Home"),
-          Calls("Calls"),
-          Stories("Stories screen"),
-          const ProfileScreen(),
-        ],
-        onPageChanged: onPageChanged,
-        controller: _pageController,
+      // IndexedStack mantém todas as 4 telas vivas na árvore de widgets
+      // (nenhuma é destruída/recriada), só desenha a que está no índice atual.
+      body: IndexedStack(
+        index: _page,
+        children: _tabs,
       ),
       bottomNavigationBar: Theme(
         data: Theme.of(context).copyWith(canvasColor: Colors.white),
         child: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.white,
-          selectedItemColor: AppColors.textPrimary,
-          unselectedItemColor: AppColors.textSecondary,
-          showUnselectedLabels: true,
-          items: [
+          fixedColor: const Color(0xFF2845E7),
+          items: const [
             BottomNavigationBarItem(
-              icon: _navIcon(Icons.home, 0),
+              icon: Icon(Icons.home),
               label: "Home",
             ),
             BottomNavigationBarItem(
-              icon: _navIcon(Icons.call, 1),
+              icon: Icon(Icons.call),
               label: "Calls",
             ),
             BottomNavigationBarItem(
-              icon: _navIcon(Icons.auto_stories, 2),
+              icon: Icon(Icons.auto_stories),
               label: "Stories",
             ),
             BottomNavigationBarItem(
-              icon: _navIcon(Icons.person, 3),
+              icon: Icon(Icons.person),
               label: "Perfil",
             ),
           ],
