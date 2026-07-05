@@ -1,9 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:whatsapp_redesign/model/chat_model.dart';
+import '../core/services/chat_service.dart';
 import '../core/services/story_service.dart';
 import '../core/theme/app_theme.dart';
+import 'chat/chat_screen.dart';
 import 'new_chat_screen.dart';
 import 'stories/add_story_screen.dart';
 import 'stories/story_viewer_screen.dart';
@@ -18,20 +19,31 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   final _storyService = StoryService();
+  final _chatService = ChatService();
   late Future<List<Map<String, dynamic>>> _storiesFuture;
+  late Future<List<Map<String, dynamic>>> _chatsFuture;
 
   @override
   void initState() {
     super.initState();
     _reloadStories();
+    _reloadChats();
   }
 
   void _reloadStories() {
     _storiesFuture = _storyService.fetchGroupedStories();
   }
 
+  void _reloadChats() {
+    _chatsFuture = _chatService.fetchMyChats();
+  }
+
   Future<void> _refreshStories() async {
     setState(_reloadStories);
+  }
+
+  Future<void> _refreshChats() async {
+    setState(_reloadChats);
   }
 
   String _formatDay(String? isoDate) {
@@ -83,11 +95,12 @@ class _HomeState extends State<Home> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.lineGreen,
         child: const Icon(Icons.chat, color: Colors.white),
-        onPressed: () {
-          Navigator.push(
+        onPressed: () async {
+          await Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const NewChatScreen()),
           );
+          _refreshChats();
         },
       ),
       body: Column(
@@ -136,45 +149,113 @@ class _HomeState extends State<Home> {
             ),
           ),
           Expanded(
-            child: ListView.builder(
-                itemBuilder: (context, position) {
-                  return Padding(
-                      padding: const EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
-                      child: Card(
+            child: RefreshIndicator(
+              onRefresh: _refreshChats,
+              child: FutureBuilder<List<Map<String, dynamic>>>(
+                future: _chatsFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (snapshot.hasError) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Text(
+                          '${snapshot.error}',
+                          style: const TextStyle(color: AppColors.error),
+                        ),
+                      ),
+                    );
+                  }
+                  final chats = snapshot.data ?? [];
+                  if (chats.isEmpty) {
+                    return ListView(
+                      children: const [
+                        Padding(
+                          padding: EdgeInsets.all(32),
+                          child: Center(
+                            child: Text(
+                              'Nenhuma conversa ainda.\nToque no botão verde pra começar.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: AppColors.textSecondary),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+                  return ListView.builder(
+                    itemCount: chats.length,
+                    itemBuilder: (context, position) {
+                      final chat = chats[position];
+                      final name = chat['other_user_name'] ?? 'Usuário';
+                      final avatar = chat['other_user_avatar'];
+                      final lastType = chat['last_message_type'];
+                      final lastContent = lastType == 'image'
+                          ? '📷 Foto'
+                          : (chat['last_message_content'] ?? 'Diga oi 👋');
+                      final lastTime = _formatTime(chat['last_message_at']);
+
+                      return Padding(
+                        padding: const EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
+                        child: Card(
                           elevation: 1.0,
                           color: const Color(0xFFFFFFFF),
                           child: ListTile(
                             leading: CircleAvatar(
-                              backgroundImage: CachedNetworkImageProvider(
-                                  ChatMockData[position].imageUrl),
+                              backgroundColor: AppColors.surface,
+                              backgroundImage: avatar != null
+                                  ? CachedNetworkImageProvider(avatar)
+                                  : null,
+                              child: avatar == null
+                                  ? Text(name.isNotEmpty ? name[0].toUpperCase() : '?')
+                                  : null,
                             ),
                             title: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: <Widget>[
                                 Text(
-                                  ChatMockData[position].name,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold),
+                                  name,
+                                  style: const TextStyle(fontWeight: FontWeight.bold),
                                 ),
                                 Text(
-                                  ChatMockData[position].time,
-                                  style: const TextStyle(
-                                      color: Colors.grey, fontSize: 14.0),
+                                  lastTime,
+                                  style: const TextStyle(color: Colors.grey, fontSize: 14.0),
                                 ),
                               ],
                             ),
                             subtitle: Container(
                               padding: const EdgeInsets.only(top: 5.0),
                               child: Text(
-                                ChatMockData[position].message,
-                                style: const TextStyle(
-                                    color: Colors.grey, fontSize: 15.0),
+                                lastContent,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(color: Colors.grey, fontSize: 15.0),
                               ),
                             ),
-                          )));
+                            onTap: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ChatScreen(
+                                    chatId: chat['chat_id'],
+                                    otherUserName: name,
+                                    otherUserAvatarUrl: avatar,
+                                  ),
+                                ),
+                              );
+                              _refreshChats();
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  );
                 },
-                itemCount: ChatMockData.length),
-          )
+              ),
+            ),
+          ),
         ],
       ),
     );
