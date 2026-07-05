@@ -32,6 +32,8 @@ dependencies:
   sqflite: ^2.4.1
   path: ^1.9.0
 
+  shared_preferences: ^2.3.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -39,3 +41,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/wallpapers/native.png
+    - assets/wallpapers/option1.png
+    - assets/wallpapers/option2.png
+    - assets/wallpapers/option3.png
+    - assets/wallpapers/option4.png
