@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../core/services/story_service.dart';
 import '../core/theme/app_theme.dart';
-import 'stories/add_story_screen.dart';
+import '../widgets/stories/add_story_sheet.dart';
 import 'stories/text_story_screen.dart';
 import 'stories/story_viewer_screen.dart';
 
@@ -17,40 +17,19 @@ class Stories extends StatefulWidget {
 class _StoriesState extends State<Stories> {
   final _storyService = StoryService();
   late Future<List<Map<String, dynamic>>> _storiesFuture;
-  String _debugInfo = 'Carregando diagnóstico...';
 
   @override
   void initState() {
     super.initState();
     _reload();
-    _runDiagnostics();
   }
 
   void _reload() {
     _storiesFuture = _storyService.fetchGroupedStories();
   }
 
-  Future<void> _runDiagnostics() async {
-    try {
-      final noJoin = await _storyService.debugCountStoriesNoJoin();
-      final withJoin = await _storyService.debugCountStoriesWithJoin();
-      if (mounted) {
-        setState(() {
-          _debugInfo = 'DEBUG: sem join = $noJoin | com join = $withJoin';
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _debugInfo = 'DEBUG erro: $e';
-        });
-      }
-    }
-  }
-
   Future<void> _refresh() async {
     setState(_reload);
-    await _runDiagnostics();
   }
 
   @override
@@ -82,10 +61,7 @@ class _StoriesState extends State<Stories> {
             backgroundColor: AppColors.lineGreen,
             child: const Icon(Icons.camera_alt, color: Colors.white),
             onPressed: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const AddStoryScreen()),
-              );
+              await showAddStorySheet(context);
               _refresh();
             },
           ),
@@ -113,12 +89,6 @@ class _StoriesState extends State<Stories> {
             final stories = snapshot.data ?? [];
             return ListView(
               children: [
-                Container(
-                  width: double.infinity,
-                  color: Colors.yellow[100],
-                  padding: const EdgeInsets.all(8),
-                  child: Text(_debugInfo, style: const TextStyle(fontSize: 12)),
-                ),
                 ListTile(
                   leading: Stack(
                     children: [
@@ -145,10 +115,7 @@ class _StoriesState extends State<Stories> {
                       style: TextStyle(fontWeight: FontWeight.bold)),
                   subtitle: const Text('Desaparecerá conforme o tempo escolhido'),
                   onTap: () async {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const AddStoryScreen()),
-                    );
+                    await showAddStorySheet(context);
                     _refresh();
                   },
                 ),
