@@ -147,6 +147,14 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
     super.dispose();
   }
 
+  Color _colorFromHex(String? hex) {
+    if (hex == null || hex.isEmpty) return AppColors.primary;
+    final buffer = StringBuffer();
+    if (hex.length == 7) buffer.write('ff');
+    buffer.write(hex.replaceFirst('#', ''));
+    return Color(int.parse(buffer.toString(), radix: 16));
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_loading) {
@@ -173,202 +181,190 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
     final createdAt = DateTime.tryParse(story['created_at'] ?? '');
 
     return Scaffold(
-      backgroundColor: isText
-          ? _colorFromHex(story['background_color'])
-          : Colors.black,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            GestureDetector(
-              onTapUp: (details) {
-                final width = MediaQuery.of(context).size.width;
-                if (details.globalPosition.dx < width / 3) {
-                  _goPrevious();
-                } else {
-                  _goNext();
-                }
-              },
-              child: Positioned.fill(
-                child: isText
-                    ? Center(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          child: Text(
-                            story['caption'] ?? '',
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 26,
-                              fontWeight: FontWeight.w600,
+      backgroundColor: isText ? _colorFromHex(story['background_color']) : Colors.black,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // A FOTO ocupa a tela inteira, sem SafeArea, de ponta a ponta.
+          GestureDetector(
+            onTapUp: (details) {
+              final width = MediaQuery.of(context).size.width;
+              if (details.globalPosition.dx < width / 3) {
+                _goPrevious();
+              } else {
+                _goNext();
+              }
+            },
+            child: isText
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Text(
+                        story['caption'] ?? '',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 26,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  )
+                : CachedNetworkImage(
+                    imageUrl: story['media_url'],
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                    placeholder: (_, __) => const Center(
+                      child: CircularProgressIndicator(color: Colors.white),
+                    ),
+                  ),
+          ),
+          // Controles (barra de progresso, topo, resposta) ficam dentro do SafeArea.
+          SafeArea(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Row(
+                    children: List.generate(_stories.length, (i) {
+                      return Expanded(
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 2),
+                          height: 3,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: AnimatedBuilder(
+                              animation: _progressController,
+                              builder: (context, _) {
+                                double value = 0;
+                                if (i < _currentIndex) {
+                                  value = 1;
+                                } else if (i == _currentIndex) {
+                                  value = _progressController.value;
+                                }
+                                return FractionallySizedBox(
+                                  widthFactor: value,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(2),
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ),
-                      )
-                    : CachedNetworkImage(
-                        imageUrl: story['media_url'],
-                        fit: BoxFit.contain,
-                        placeholder: (_, __) => const Center(
-                          child: CircularProgressIndicator(color: Colors.white),
-                        ),
-                      ),
-              ),
-            ),
-            Positioned(
-              top: 4,
-              left: 8,
-              right: 8,
-              child: Row(
-                children: List.generate(_stories.length, (i) {
-                  return Expanded(
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 2),
-                      height: 3,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.3),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: AnimatedBuilder(
-                          animation: _progressController,
-                          builder: (context, _) {
-                            double value = 0;
-                            if (i < _currentIndex) {
-                              value = 1;
-                            } else if (i == _currentIndex) {
-                              value = _progressController.value;
-                            }
-                            return FractionallySizedBox(
-                              widthFactor: value,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(2),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-              ),
-            ),
-            Positioned(
-              top: 16,
-              left: 8,
-              right: 8,
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    onPressed: () => Navigator.pop(context),
+                      );
+                    }),
                   ),
-                  CircleAvatar(
-                    radius: 18,
-                    backgroundColor: AppColors.surface,
-                    backgroundImage: widget.userAvatarUrl != null
-                        ? CachedNetworkImageProvider(widget.userAvatarUrl!)
-                        : null,
-                    child: widget.userAvatarUrl == null
-                        ? Text(widget.userName.substring(0, 1).toUpperCase())
-                        : null,
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.userName,
-                          style: const TextStyle(
-                              color: Colors.white, fontWeight: FontWeight.w600),
-                        ),
-                        if (createdAt != null)
-                          Text(
-                            DateFormat('dd/MM HH:mm').format(createdAt),
-                            style: const TextStyle(
-                                color: Colors.white70, fontSize: 12),
-                          ),
-                      ],
-                    ),
-                  ),
-                  const Icon(Icons.more_vert, color: Colors.white),
-                ],
-              ),
-            ),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 16,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.4),
-                          borderRadius: BorderRadius.circular(30),
-                          border: Border.all(color: Colors.white38),
-                        ),
-                        child: TextField(
-                          controller: _replyController,
-                          focusNode: _replyFocusNode,
-                          style: const TextStyle(color: Colors.white),
-                          onSubmitted: (_) => _sendReply(),
-                          decoration: const InputDecoration(
-                            hintText: 'Responder',
-                            hintStyle: TextStyle(color: Colors.white70),
-                            border: InputBorder.none,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      onPressed: _sendingReply ? null : _sendReply,
-                      icon: _sendingReply
-                          ? const SizedBox(
-                              height: 18,
-                              width: 18,
-                              child: CircularProgressIndicator(
-                                  color: Colors.white, strokeWidth: 2),
-                            )
-                          : const Icon(Icons.send, color: Colors.white),
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Encaminhar em breve.')),
-                        );
-                      },
-                      icon: const Icon(Icons.forward_outlined, color: Colors.white),
-                    ),
-                    IconButton(
-                      onPressed: _toggleLike,
-                      icon: Icon(
-                        _liked ? Icons.favorite : Icons.favorite_border,
-                        color: _liked ? AppColors.error : Colors.white,
-                      ),
-                    ),
-                  ],
                 ),
-              ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(4, 8, 8, 0),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back, color: Colors.white),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                      CircleAvatar(
+                        radius: 18,
+                        backgroundColor: AppColors.surface,
+                        backgroundImage: widget.userAvatarUrl != null
+                            ? CachedNetworkImageProvider(widget.userAvatarUrl!)
+                            : null,
+                        child: widget.userAvatarUrl == null
+                            ? Text(widget.userName.substring(0, 1).toUpperCase())
+                            : null,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.userName,
+                              style: const TextStyle(
+                                  color: Colors.white, fontWeight: FontWeight.w600),
+                            ),
+                            if (createdAt != null)
+                              Text(
+                                DateFormat('dd/MM HH:mm').format(createdAt),
+                                style: const TextStyle(color: Colors.white70, fontSize: 12),
+                              ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.more_vert, color: Colors.white),
+                    ],
+                  ),
+                ),
+                const Spacer(),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.4),
+                            borderRadius: BorderRadius.circular(30),
+                            border: Border.all(color: Colors.white38),
+                          ),
+                          child: TextField(
+                            controller: _replyController,
+                            focusNode: _replyFocusNode,
+                            style: const TextStyle(color: Colors.white),
+                            onSubmitted: (_) => _sendReply(),
+                            decoration: const InputDecoration(
+                              hintText: 'Responder',
+                              hintStyle: TextStyle(color: Colors.white70),
+                              border: InputBorder.none,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        onPressed: _sendingReply ? null : _sendReply,
+                        icon: _sendingReply
+                            ? const SizedBox(
+                                height: 18,
+                                width: 18,
+                                child: CircularProgressIndicator(
+                                    color: Colors.white, strokeWidth: 2),
+                              )
+                            : const Icon(Icons.send, color: Colors.white),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Encaminhar em breve.')),
+                          );
+                        },
+                        icon: const Icon(Icons.forward_outlined, color: Colors.white),
+                      ),
+                      IconButton(
+                        onPressed: _toggleLike,
+                        icon: Icon(
+                          _liked ? Icons.favorite : Icons.favorite_border,
+                          color: _liked ? AppColors.error : Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
-  }
-
-  Color _colorFromHex(String? hex) {
-    if (hex == null || hex.isEmpty) return AppColors.primary;
-    final buffer = StringBuffer();
-    if (hex.length == 7) buffer.write('ff');
-    buffer.write(hex.replaceFirst('#', ''));
-    return Color(int.parse(buffer.toString(), radix: 16));
   }
 }
