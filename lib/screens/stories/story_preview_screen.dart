@@ -1,9 +1,9 @@
 import 'dart:io';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../core/services/story_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../widgets/stories/duration_sheet.dart';
+import '../../widgets/stories/glass_caption_field.dart';
 
 class StoryPreviewScreen extends StatefulWidget {
   const StoryPreviewScreen({super.key, required this.imageFile});
@@ -91,29 +91,7 @@ class _StoryPreviewScreenState extends State<StoryPreviewScreen> {
                 child: Row(
                   children: [
                     Expanded(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(30),
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.25),
-                              borderRadius: BorderRadius.circular(30),
-                              border: Border.all(color: Colors.white.withOpacity(0.15)),
-                            ),
-                            child: TextField(
-                              controller: _captionController,
-                              style: const TextStyle(color: Colors.white),
-                              decoration: const InputDecoration(
-                                hintText: 'Adicionar legenda...',
-                                hintStyle: TextStyle(color: Colors.white70),
-                                border: InputBorder.none,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
+                      child: GlassCaptionField(controller: _captionController),
                     ),
                     const SizedBox(width: 12),
                     DurationPickerButton(
