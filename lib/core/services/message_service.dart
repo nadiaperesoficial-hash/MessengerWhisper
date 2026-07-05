@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'local_db_service.dart';
 
@@ -27,6 +28,14 @@ class MessageService {
     await _localDb.insertMessage(inserted);
   }
 
+  Future<String> uploadChatImage(File file) async {
+    final userId = _client.auth.currentUser!.id;
+    final ext = file.path.split('.').last;
+    final path = '$userId/chats/${DateTime.now().millisecondsSinceEpoch}.$ext';
+    await _client.storage.from('media').upload(path, file);
+    return _client.storage.from('media').getPublicUrl(path);
+  }
+
   Future<void> sendImageMessage(String chatId, String mediaUrl) async {
     final myId = _client.auth.currentUser!.id;
     final inserted = await _client
@@ -43,8 +52,6 @@ class MessageService {
     await _localDb.insertMessage(inserted);
   }
 
-  /// Chamado quando a tela de conversa abre — pega qualquer mensagem que
-  /// chegou enquanto o chat estava fechado e marca como lida agora.
   Future<void> markChatAsRead(String chatId) async {
     final myId = _client.auth.currentUser!.id;
     await _client.rpc('mark_chat_read', params: {
@@ -108,7 +115,7 @@ class MessageService {
     final delivered = List<String>.from(row['delivered_to'] ?? []);
     final readBy = List<String>.from(row['read_by'] ?? []);
     if (!delivered.contains(myId)) delivered.add(myId);
-    if (!readBy.contains(myId)) readBy.add(myId); // chat está aberto = já foi lida
+    if (!readBy.contains(myId)) readBy.add(myId);
 
     await _client
         .from('messages')
