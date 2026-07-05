@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../core/services/chat_service.dart';
 import '../../core/services/story_service.dart';
 import '../../core/theme/app_theme.dart';
+import '../../widgets/stories/glass_caption_field.dart';
 
 class StoryViewerScreen extends StatefulWidget {
   const StoryViewerScreen({
@@ -185,7 +186,6 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // A FOTO ocupa a tela inteira, sem SafeArea, de ponta a ponta.
           GestureDetector(
             onTapUp: (details) {
               final width = MediaQuery.of(context).size.width;
@@ -220,7 +220,6 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
                     ),
                   ),
           ),
-          // Controles (barra de progresso, topo, resposta) ficam dentro do SafeArea.
           SafeArea(
             child: Column(
               children: [
@@ -310,24 +309,10 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
                   child: Row(
                     children: [
                       Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.4),
-                            borderRadius: BorderRadius.circular(30),
-                            border: Border.all(color: Colors.white38),
-                          ),
-                          child: TextField(
-                            controller: _replyController,
-                            focusNode: _replyFocusNode,
-                            style: const TextStyle(color: Colors.white),
-                            onSubmitted: (_) => _sendReply(),
-                            decoration: const InputDecoration(
-                              hintText: 'Responder',
-                              hintStyle: TextStyle(color: Colors.white70),
-                              border: InputBorder.none,
-                            ),
-                          ),
+                        child: GlassCaptionField(
+                          controller: _replyController,
+                          hintText: 'Responder',
+                          onSubmitted: (_) => _sendReply(),
                         ),
                       ),
                       const SizedBox(width: 8),
