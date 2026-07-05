@@ -6,6 +6,7 @@ import '../../core/theme/app_theme.dart';
 import 'edit_profile_screen.dart';
 import 'placeholder_screen.dart';
 import 'delete_account_screen.dart';
+import 'conversas_wallpaper_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -34,7 +35,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _logout() async {
     await Supabase.instance.client.auth.signOut();
-    // O AuthGate detecta a sessão encerrada e volta pro Login sozinho.
   }
 
   @override
@@ -150,8 +150,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) =>
-                          const PlaceholderScreen(title: 'Conversas'),
+                      builder: (_) => const ConversasWallpaperScreen(),
                     ),
                   ),
                 ),
