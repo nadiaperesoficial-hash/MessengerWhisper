@@ -52,6 +52,23 @@ class MessageService {
     await _localDb.insertMessage(inserted);
   }
 
+  /// GIF vem de uma URL pronta da Giphy (não passa pelo nosso Storage).
+  Future<void> sendGifMessage(String chatId, String gifUrl) async {
+    final myId = _client.auth.currentUser!.id;
+    final inserted = await _client
+        .from('messages')
+        .insert({
+          'chat_id': chatId,
+          'sender_id': myId,
+          'type': 'gif',
+          'media_url': gifUrl,
+          'delivered_to': [myId],
+        })
+        .select()
+        .single();
+    await _localDb.insertMessage(inserted);
+  }
+
   Future<void> markChatAsRead(String chatId) async {
     final myId = _client.auth.currentUser!.id;
     await _client.rpc('mark_chat_read', params: {
