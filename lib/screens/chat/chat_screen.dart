@@ -1,11 +1,14 @@
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:giphy_get/giphy_get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/config/env.dart';
 import '../../core/services/message_service.dart';
 import '../../core/theme/app_theme.dart';
+import '../../widgets/chat/glass_message_bar.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({
@@ -89,16 +92,20 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
+  Future<void> _refreshMessages() async {
+    final updated = await _messageService.loadLocalHistory(widget.chatId);
+    if (!mounted) return;
+    setState(() => _messages = updated);
+    _scrollToBottom();
+  }
+
   Future<void> _sendText() async {
     final text = _textController.text.trim();
     if (text.isEmpty) return;
     _textController.clear();
     try {
       await _messageService.sendTextMessage(widget.chatId, text);
-      final updated = await _messageService.loadLocalHistory(widget.chatId);
-      if (!mounted) return;
-      setState(() => _messages = updated);
-      _scrollToBottom();
+      await _refreshMessages();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -115,10 +122,7 @@ class _ChatScreenState extends State<ChatScreen> {
       final file = File(picked.path);
       final url = await _messageService.uploadChatImage(file);
       await _messageService.sendImageMessage(widget.chatId, url);
-      final updated = await _messageService.loadLocalHistory(widget.chatId);
-      if (!mounted) return;
-      setState(() => _messages = updated);
-      _scrollToBottom();
+      await _refreshMessages();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -127,57 +131,24 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  void _showMediaOptions() {
-    FocusScope.of(context).unfocus();
-    showModalBottomSheet(
+  Future<void> _pickGif() async {
+    final gif = await GiphyGet.getGif(
       context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 8),
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.border,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 12),
-              ListTile(
-                leading: const CircleAvatar(
-                  backgroundColor: AppColors.surface,
-                  child: Icon(Icons.camera_alt_outlined, color: AppColors.textPrimary),
-                ),
-                title: const Text('Câmera'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickImage(ImageSource.camera);
-                },
-              ),
-              ListTile(
-                leading: const CircleAvatar(
-                  backgroundColor: AppColors.surface,
-                  child: Icon(Icons.photo_outlined, color: AppColors.textPrimary),
-                ),
-                title: const Text('Galeria'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickImage(ImageSource.gallery);
-                },
-              ),
-              const SizedBox(height: 12),
-            ],
-          ),
-        );
-      },
+      apiKey: Env.giphyApiKey,
+      lang: GiphyLanguage.portuguese,
     );
+    if (gif == null) return;
+    final gifUrl = gif.images?.original?.url;
+    if (gifUrl == null) return;
+    try {
+      await _messageService.sendGifMessage(widget.chatId, gifUrl);
+      await _refreshMessages();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao enviar GIF: $e'), backgroundColor: AppColors.error),
+      );
+    }
   }
 
   void _toggleEmoji() {
@@ -275,84 +246,24 @@ class _ChatScreenState extends State<ChatScreen> {
           SafeArea(
             top: false,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Expanded(
-                    child: Container(
-                      constraints: const BoxConstraints(minHeight: 46),
-                      padding: const EdgeInsets.symmetric(horizontal: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          IconButton(
-                            padding: EdgeInsets.zero,
-                            icon: Icon(
-                              _showEmoji
-                                  ? Icons.keyboard_outlined
-                                  : Icons.emoji_emotions_outlined,
-                              color: AppColors.textSecondary,
-                            ),
-                            onPressed: _toggleEmoji,
-                          ),
-                          IconButton(
-                            padding: EdgeInsets.zero,
-                            icon: const Icon(
-                              Icons.camera_alt_outlined,
-                              color: AppColors.textSecondary,
-                            ),
-                            onPressed: _showMediaOptions,
-                          ),
-                          Expanded(
-                            child: TextField(
-                              controller: _textController,
-                              maxLines: 5,
-                              minLines: 1,
-                              textAlignVertical: TextAlignVertical.center,
-                              onTap: () {
-                                if (_showEmoji) setState(() => _showEmoji = false);
-                              },
-                              decoration: const InputDecoration(
-                                hintText: 'Mensagem',
-                                border: InputBorder.none,
-                                isDense: true,
-                                contentPadding: EdgeInsets.symmetric(vertical: 12),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  GestureDetector(
-                    onLongPressStart: hasText ? null : (_) => setState(() => _isRecording = true),
-                    onLongPressEnd: hasText
-                        ? null
-                        : (_) {
-                            setState(() => _isRecording = false);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Gravação de áudio em breve.')),
-                            );
-                          },
-                    onTap: hasText ? _sendText : null,
-                    child: CircleAvatar(
-                      radius: 23,
-                      backgroundColor:
-                          _isRecording ? AppColors.error : AppColors.lineGreen,
-                      child: Icon(
-                        hasText ? Icons.send : Icons.mic,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ),
-                  ),
-                ],
+              padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+              child: GlassMessageBar(
+                controller: _textController,
+                hasText: hasText,
+                isRecording: _isRecording,
+                emojiActive: _showEmoji,
+                onEmoji: _toggleEmoji,
+                onCamera: () => _pickImage(ImageSource.camera),
+                onGallery: () => _pickImage(ImageSource.gallery),
+                onGif: _pickGif,
+                onSend: _sendText,
+                onMicStart: (_) => setState(() => _isRecording = true),
+                onMicEnd: (_) {
+                  setState(() => _isRecording = false);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Gravação de áudio em breve.')),
+                  );
+                },
               ),
             ),
           ),
@@ -394,6 +305,7 @@ class _MessageBubble extends StatelessWidget {
     final readAt = message['read_at'];
     final timeLabel = createdAt != null ? DateFormat('HH:mm').format(createdAt) : '';
     final statusLabel = isMine ? (readAt != null ? 'Lido' : 'Entregue') : null;
+    final isMedia = type == 'image' || type == 'gif';
 
     return Align(
       alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
@@ -416,7 +328,7 @@ class _MessageBubble extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (type == 'image' && message['media_url'] != null)
+            if (isMedia && message['media_url'] != null)
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: CachedNetworkImage(
