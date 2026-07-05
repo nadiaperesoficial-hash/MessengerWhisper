@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/config/env.dart';
 import '../../core/services/message_service.dart';
+import '../../core/services/wallpaper_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../widgets/chat/glass_message_bar.dart';
 
@@ -28,6 +29,7 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final _messageService = MessageService();
+  final _wallpaperService = WallpaperService();
   final _textController = TextEditingController();
   final _scrollController = ScrollController();
 
@@ -35,6 +37,7 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _loading = true;
   bool _showEmoji = false;
   bool _isRecording = false;
+  String _wallpaperAsset = WallpaperService.defaultWallpaper;
 
   static const _emojis = [
     '😀', '😁', '😂', '🤣', '😊', '😍', '😘', '😜', '🤔', '😎',
@@ -46,6 +49,7 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
     _textController.addListener(() => setState(() {}));
+    _loadWallpaper();
     _loadHistory();
     _messageService.subscribeToChat(
       widget.chatId,
@@ -68,6 +72,12 @@ class _ChatScreenState extends State<ChatScreen> {
       },
     );
     _messageService.markChatAsRead(widget.chatId);
+  }
+
+  Future<void> _loadWallpaper() async {
+    final asset = await _wallpaperService.getSelectedWallpaper();
+    if (!mounted) return;
+    setState(() => _wallpaperAsset = asset);
   }
 
   Future<void> _loadHistory() async {
@@ -114,7 +124,6 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  /// Câmera foi removida por enquanto — esse botão abre a galeria diretamente.
   Future<void> _pickFromGallery() async {
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
@@ -152,8 +161,6 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  /// Um ícone só: pergunta rapidinho se é emoji (instantâneo, sem delay)
-  /// ou GIF (abre o buscador do Giphy).
   void _handleEmojiOrGifTap() {
     if (_showEmoji) {
       setState(() => _showEmoji = false);
@@ -221,7 +228,6 @@ class _ChatScreenState extends State<ChatScreen> {
     final hasText = _textController.text.trim().isNotEmpty;
 
     return Scaffold(
-      backgroundColor: AppColors.chatBackground,
       appBar: AppBar(
         titleSpacing: 0,
         title: Row(
@@ -258,71 +264,79 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: _loading
-                ? const Center(child: CircularProgressIndicator())
-                : _messages.isEmpty
-                    ? const Center(
-                        child: Text(
-                          'Diga oi 👋',
-                          style: TextStyle(color: AppColors.textSecondary),
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage(_wallpaperAsset),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Column(
+          children: [
+            Expanded(
+              child: _loading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _messages.isEmpty
+                      ? const Center(
+                          child: Text(
+                            'Diga oi 👋',
+                            style: TextStyle(color: AppColors.textSecondary),
+                          ),
+                        )
+                      : ListView.builder(
+                          controller: _scrollController,
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                          itemCount: _messages.length,
+                          itemBuilder: (context, index) {
+                            final msg = _messages[index];
+                            final isMine = msg['sender_id'] == myId;
+                            return _MessageBubble(message: msg, isMine: isMine);
+                          },
                         ),
-                      )
-                    : ListView.builder(
-                        controller: _scrollController,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-                        itemCount: _messages.length,
-                        itemBuilder: (context, index) {
-                          final msg = _messages[index];
-                          final isMine = msg['sender_id'] == myId;
-                          return _MessageBubble(message: msg, isMine: isMine);
-                        },
-                      ),
-          ),
-          SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
-              child: GlassMessageBar(
-                controller: _textController,
-                hasText: hasText,
-                isRecording: _isRecording,
-                emojiActive: _showEmoji,
-                onEmojiOrGif: _handleEmojiOrGifTap,
-                onGallery: _pickFromGallery,
-                onSend: _sendText,
-                onMicStart: (_) => setState(() => _isRecording = true),
-                onMicEnd: (_) {
-                  setState(() => _isRecording = false);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Gravação de áudio em breve.')),
-                  );
-                },
-              ),
             ),
-          ),
-          if (_showEmoji)
-            SizedBox(
-              height: 250,
-              child: GridView.builder(
-                padding: const EdgeInsets.all(8),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 8,
+            SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+                child: GlassMessageBar(
+                  controller: _textController,
+                  hasText: hasText,
+                  isRecording: _isRecording,
+                  emojiActive: _showEmoji,
+                  onEmojiOrGif: _handleEmojiOrGifTap,
+                  onGallery: _pickFromGallery,
+                  onSend: _sendText,
+                  onMicStart: (_) => setState(() => _isRecording = true),
+                  onMicEnd: (_) {
+                    setState(() => _isRecording = false);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Gravação de áudio em breve.')),
+                    );
+                  },
                 ),
-                itemCount: _emojis.length,
-                itemBuilder: (context, index) {
-                  return InkWell(
-                    onTap: () => _insertEmoji(_emojis[index]),
-                    child: Center(
-                      child: Text(_emojis[index], style: const TextStyle(fontSize: 24)),
-                    ),
-                  );
-                },
               ),
             ),
-        ],
+            if (_showEmoji)
+              SizedBox(
+                height: 250,
+                child: GridView.builder(
+                  padding: const EdgeInsets.all(8),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 8,
+                  ),
+                  itemCount: _emojis.length,
+                  itemBuilder: (context, index) {
+                    return InkWell(
+                      onTap: () => _insertEmoji(_emojis[index]),
+                      child: Center(
+                        child: Text(_emojis[index], style: const TextStyle(fontSize: 24)),
+                      ),
+                    );
+                  },
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
