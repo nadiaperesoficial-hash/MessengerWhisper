@@ -127,6 +127,59 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  void _showMediaOptions() {
+    FocusScope.of(context).unfocus();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.border,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 12),
+              ListTile(
+                leading: const CircleAvatar(
+                  backgroundColor: AppColors.surface,
+                  child: Icon(Icons.camera_alt_outlined, color: AppColors.textPrimary),
+                ),
+                title: const Text('Câmera'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const CircleAvatar(
+                  backgroundColor: AppColors.surface,
+                  child: Icon(Icons.photo_outlined, color: AppColors.textPrimary),
+                ),
+                title: const Text('Galeria'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.gallery);
+                },
+              ),
+              const SizedBox(height: 12),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   void _toggleEmoji() {
     setState(() => _showEmoji = !_showEmoji);
     if (_showEmoji) FocusScope.of(context).unfocus();
@@ -222,44 +275,23 @@ class _ChatScreenState extends State<ChatScreen> {
           SafeArea(
             top: false,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.camera_alt_outlined, color: AppColors.textSecondary),
-                    onPressed: () => _pickImage(ImageSource.camera),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.photo_outlined, color: AppColors.textSecondary),
-                    onPressed: () => _pickImage(ImageSource.gallery),
-                  ),
                   Expanded(
                     child: Container(
-                      constraints: const BoxConstraints(minHeight: 44),
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      constraints: const BoxConstraints(minHeight: 46),
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(24),
+                        borderRadius: BorderRadius.circular(30),
                       ),
                       child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _textController,
-                              maxLines: 5,
-                              minLines: 1,
-                              onTap: () {
-                                if (_showEmoji) setState(() => _showEmoji = false);
-                              },
-                              decoration: const InputDecoration(
-                                hintText: 'Aa',
-                                border: InputBorder.none,
-                                isDense: true,
-                              ),
-                            ),
-                          ),
                           IconButton(
+                            padding: EdgeInsets.zero,
                             icon: Icon(
                               _showEmoji
                                   ? Icons.keyboard_outlined
@@ -268,11 +300,36 @@ class _ChatScreenState extends State<ChatScreen> {
                             ),
                             onPressed: _toggleEmoji,
                           ),
+                          IconButton(
+                            padding: EdgeInsets.zero,
+                            icon: const Icon(
+                              Icons.camera_alt_outlined,
+                              color: AppColors.textSecondary,
+                            ),
+                            onPressed: _showMediaOptions,
+                          ),
+                          Expanded(
+                            child: TextField(
+                              controller: _textController,
+                              maxLines: 5,
+                              minLines: 1,
+                              textAlignVertical: TextAlignVertical.center,
+                              onTap: () {
+                                if (_showEmoji) setState(() => _showEmoji = false);
+                              },
+                              decoration: const InputDecoration(
+                                hintText: 'Mensagem',
+                                border: InputBorder.none,
+                                isDense: true,
+                                contentPadding: EdgeInsets.symmetric(vertical: 12),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(width: 4),
+                  const SizedBox(width: 8),
                   GestureDetector(
                     onLongPressStart: hasText ? null : (_) => setState(() => _isRecording = true),
                     onLongPressEnd: hasText
@@ -285,7 +342,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           },
                     onTap: hasText ? _sendText : null,
                     child: CircleAvatar(
-                      radius: 22,
+                      radius: 23,
                       backgroundColor:
                           _isRecording ? AppColors.error : AppColors.lineGreen,
                       child: Icon(
