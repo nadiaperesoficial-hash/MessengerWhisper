@@ -7,10 +7,8 @@ class GlassMessageBar extends StatelessWidget {
     required this.controller,
     required this.hasText,
     required this.isRecording,
-    required this.onEmoji,
-    required this.onCamera,
+    required this.onEmojiOrGif,
     required this.onGallery,
-    required this.onGif,
     required this.onSend,
     required this.onMicStart,
     required this.onMicEnd,
@@ -21,10 +19,8 @@ class GlassMessageBar extends StatelessWidget {
   final bool hasText;
   final bool isRecording;
   final bool emojiActive;
-  final VoidCallback onEmoji;
-  final VoidCallback onCamera;
+  final VoidCallback onEmojiOrGif;
   final VoidCallback onGallery;
-  final VoidCallback onGif;
   final VoidCallback onSend;
   final ValueChanged<LongPressStartDetails> onMicStart;
   final ValueChanged<LongPressEndDetails> onMicEnd;
@@ -43,63 +39,62 @@ class GlassMessageBar extends StatelessWidget {
             border: Border.all(color: Colors.white.withOpacity(0.35)),
           ),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
                 icon: Icon(
                   emojiActive ? Icons.keyboard_outlined : Icons.emoji_emotions_outlined,
                   color: const Color(0xFF3A3A3A),
                 ),
-                onPressed: onEmoji,
-              ),
-              IconButton(
-                icon: const Icon(Icons.camera_alt_outlined, color: Color(0xFF3A3A3A)),
-                onPressed: onCamera,
+                onPressed: onEmojiOrGif,
               ),
               IconButton(
                 icon: const Icon(Icons.photo_outlined, color: Color(0xFF3A3A3A)),
                 onPressed: onGallery,
               ),
-              IconButton(
-                icon: const Icon(Icons.gif_box_outlined, color: Color(0xFF3A3A3A)),
-                onPressed: onGif,
-              ),
               Expanded(
-                child: TextField(
-                  controller: controller,
-                  maxLines: 5,
-                  minLines: 1,
-                  style: const TextStyle(color: Color(0xFF2C2C2C), fontSize: 15),
-                  cursorColor: const Color(0xFF2C2C2C),
-                  decoration: const InputDecoration(
-                    hintText: 'Mensagem',
-                    hintStyle: TextStyle(color: Color(0xFF6B6B6B)),
-                    filled: false,
-                    fillColor: Colors.transparent,
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    disabledBorder: InputBorder.none,
-                    errorBorder: InputBorder.none,
-                    isDense: true,
-                    contentPadding: EdgeInsets.symmetric(vertical: 12),
+                child: Center(
+                  child: TextField(
+                    controller: controller,
+                    maxLines: 5,
+                    minLines: 1,
+                    textAlignVertical: TextAlignVertical.center,
+                    style: const TextStyle(color: Color(0xFF2C2C2C), fontSize: 15),
+                    cursorColor: const Color(0xFF2C2C2C),
+                    decoration: const InputDecoration(
+                      hintText: 'Mensagem',
+                      hintStyle: TextStyle(color: Color(0xFF6B6B6B)),
+                      filled: false,
+                      fillColor: Colors.transparent,
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      disabledBorder: InputBorder.none,
+                      errorBorder: InputBorder.none,
+                      isCollapsed: true,
+                      contentPadding: EdgeInsets.symmetric(vertical: 12),
+                    ),
                   ),
                 ),
               ),
-              GestureDetector(
-                onLongPressStart: hasText ? null : onMicStart,
-                onLongPressEnd: hasText ? null : onMicEnd,
-                onTap: hasText ? onSend : null,
-                child: Padding(
-                  padding: const EdgeInsets.all(6),
-                  child: CircleAvatar(
-                    radius: 19,
-                    backgroundColor:
-                        isRecording ? const Color(0xFFE23744) : const Color(0xFF00C300),
-                    child: Icon(
-                      hasText ? Icons.send : Icons.mic,
-                      color: Colors.white,
-                      size: 18,
+              Padding(
+                padding: const EdgeInsets.only(left: 4),
+                child: GestureDetector(
+                  onLongPressStart: hasText ? null : onMicStart,
+                  onLongPressEnd: hasText ? null : onMicEnd,
+                  onTap: hasText ? onSend : null,
+                  child: Padding(
+                    padding: const EdgeInsets.all(6),
+                    child: CircleAvatar(
+                      radius: 19,
+                      backgroundColor:
+                          isRecording ? const Color(0xFFE23744) : const Color(0xFF00C300),
+                      child: Icon(
+                        hasText ? Icons.send : Icons.mic,
+                        color: Colors.white,
+                        size: 18,
+                      ),
                     ),
                   ),
                 ),
