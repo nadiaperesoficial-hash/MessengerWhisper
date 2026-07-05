@@ -44,8 +44,6 @@ class StoryService {
     });
   }
 
-  /// DIAGNÓSTICO: conta stories válidas SEM juntar com profiles.
-  /// Se isso já vier 0, o problema é RLS/permissão na própria tabela stories.
   Future<int> debugCountStoriesNoJoin() async {
     final rows = await _client
         .from('stories')
@@ -54,12 +52,10 @@ class StoryService {
     return (rows as List).length;
   }
 
-  /// DIAGNÓSTICO: conta stories válidas COM o join em profiles (igual usamos de verdade).
-  /// Se o de cima vier >0 e esse vier 0, o problema é o join com profiles.
   Future<int> debugCountStoriesWithJoin() async {
     final rows = await _client
         .from('stories')
-        .select('id, profiles!inner(id)')
+        .select('id, profiles!stories_user_id_fkey(id)')
         .gt('expires_at', DateTime.now().toUtc().toIso8601String());
     return (rows as List).length;
   }
@@ -68,7 +64,7 @@ class StoryService {
     try {
       final rows = await _client
           .from('stories')
-          .select('*, profiles!inner(id, display_name, avatar_url)')
+          .select('*, profiles!stories_user_id_fkey(id, display_name, avatar_url)')
           .gt('expires_at', DateTime.now().toUtc().toIso8601String())
           .order('created_at', ascending: false);
 
@@ -101,7 +97,7 @@ class StoryService {
   Future<List<Map<String, dynamic>>> fetchStoriesForUser(String userId) async {
     final rows = await _client
         .from('stories')
-        .select('*, profiles!inner(id, display_name, avatar_url)')
+        .select('*, profiles!stories_user_id_fkey(id, display_name, avatar_url)')
         .eq('user_id', userId)
         .gt('expires_at', DateTime.now().toUtc().toIso8601String())
         .order('created_at', ascending: true);
