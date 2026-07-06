@@ -35,9 +35,6 @@ jobs:
       - name: Restaurar google-services.json (Firebase)
         run: |
           echo "${{ secrets.FIREBASE_GOOGLE_SERVICES_JSON }}" | tr -d '[:space:]' | base64 -d > android/app/google-services.json
-          echo "Validando JSON gerado:"
-          head -c 100 android/app/google-services.json
-          echo ""
           python3 -c "import json; json.load(open('android/app/google-services.json'))" && echo "JSON válido ✅" || (echo "JSON inválido ❌" && exit 1)
 
       - name: Build APK debug
@@ -45,6 +42,8 @@ jobs:
           flutter build apk --debug \
             --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
             --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }} \
+            --dart-define=SUPABASE_B_URL=${{ secrets.SUPABASE_B_URL }} \
+            --dart-define=SUPABASE_B_ANON_KEY=${{ secrets.SUPABASE_B_ANON_KEY }} \
             --dart-define=AGORA_APP_ID=${{ secrets.AGORA_APP_ID }} \
             --dart-define=GIPHY_API_KEY=${{ secrets.GIPHY_API_KEY }}
 
