@@ -1,16 +1,13 @@
 import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'media_upload_service.dart';
 
 class StoryService {
   final SupabaseClient _client = Supabase.instance.client;
+  final MediaUploadService _mediaUploadService = MediaUploadService();
 
   Future<String> uploadStoryImage(File file) async {
-    final userId = _client.auth.currentUser!.id;
-    final ext = file.path.split('.').last;
-    final path = '$userId/stories/${DateTime.now().millisecondsSinceEpoch}.$ext';
-
-    await _client.storage.from('media').upload(path, file);
-    return _client.storage.from('media').getPublicUrl(path);
+    return _mediaUploadService.uploadImage(file, folder: 'stories');
   }
 
   Future<void> createImageStory({
