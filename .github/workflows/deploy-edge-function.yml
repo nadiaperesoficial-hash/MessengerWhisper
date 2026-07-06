@@ -1,0 +1,35 @@
+name: Deploy Edge Function
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'supabase/functions/**'
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Configurar segredos da função (Instância B)
+        run: |
+          supabase secrets set \
+            SUPABASE_B_URL="${{ secrets.SUPABASE_B_URL }}" \
+            SUPABASE_B_SERVICE_ROLE_KEY="${{ secrets.SUPABASE_B_SERVICE_ROLE_KEY }}" \
+            --project-ref ${{ secrets.SUPABASE_PROJECT_REF_A }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Deploy da função upload-media
+        run: |
+          supabase functions deploy upload-media \
+            --project-ref ${{ secrets.SUPABASE_PROJECT_REF_A }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
