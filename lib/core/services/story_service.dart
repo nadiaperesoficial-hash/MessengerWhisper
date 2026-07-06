@@ -58,6 +58,10 @@ class StoryService {
   }
 
   Future<List<Map<String, dynamic>>> fetchGroupedStories() async {
+    return _withRetryOnClockSkew(() => _fetchGroupedStoriesInternal());
+  }
+
+  Future<List<Map<String, dynamic>>> _fetchGroupedStoriesInternal() async {
     try {
       final rows = await _client
           .from('stories')
@@ -86,8 +90,8 @@ class StoryService {
       }
 
       return grouped.values.toList();
-    } catch (e) {
-      throw Exception('Erro ao buscar stories: $e');
+    } on PostgrestException catch (e) {
+      throw Exception('Erro ao buscar stories: ${e.message}');
     }
   }
 
@@ -127,5 +131,23 @@ class StoryService {
         .delete()
         .eq('story_id', storyId)
         .eq('user_id', myId);
+  }
+
+  /// Tenta de novo automaticamente se o servidor rejeitar o token por
+  /// diferença momentânea de horário (erro PGRST303), renovando a sessão
+  /// antes de repetir a chamada.
+  Future<T> _withRetryOnClockSkew<T>(Future<T> Function() action) async {
+    try {
+      return await action();
+    } on PostgrestException catch (e) {
+      if (e.code == 'PGRST303') {
+        await Future.delayed(const Duration(seconds: 2));
+        try {
+          await _client.auth.refreshSession();
+        } catch (_) {}
+        return await action();
+      }
+      rethrow;
+    }
   }
 }
