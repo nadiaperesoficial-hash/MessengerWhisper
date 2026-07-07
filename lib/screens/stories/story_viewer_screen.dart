@@ -69,6 +69,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
     });
     if (_stories.isNotEmpty) {
       _checkLiked();
+      _markCurrentAsViewed();
       _progressController.forward(from: 0);
     }
   }
@@ -78,10 +79,17 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
     if (mounted) setState(() => _liked = liked);
   }
 
+  void _markCurrentAsViewed() {
+    final storyId = _stories[_currentIndex]['id'] as String;
+    // Dispara e esquece — não precisa travar a navegação esperando confirmação.
+    _storyService.markStoryAsViewed(storyId);
+  }
+
   void _goNext() {
     if (_currentIndex < _stories.length - 1) {
       setState(() => _currentIndex++);
       _checkLiked();
+      _markCurrentAsViewed();
       _progressController.forward(from: 0);
     } else {
       Navigator.pop(context);
@@ -92,6 +100,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
     if (_currentIndex > 0) {
       setState(() => _currentIndex--);
       _checkLiked();
+      _markCurrentAsViewed();
       _progressController.forward(from: 0);
     } else {
       _progressController.forward(from: 0);
