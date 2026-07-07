@@ -33,12 +33,7 @@ class StoryService {
     }
 
     final bytes = await file.readAsBytes();
-    await _clientB.storage.from('media').uploadToSignedUrl(
-          path,
-          token,
-          bytes,
-          fileOptions: raw_supabase.FileOptions(contentType: 'image/$ext'),
-        );
+    await _clientB.storage.from('media').uploadToSignedUrl(path, token, bytes);
 
     return publicUrl;
   }
@@ -121,7 +116,6 @@ class StoryService {
           };
         } else {
           grouped[userId]!['count'] = (grouped[userId]!['count'] as int) + 1;
-          // Se qualquer story do grupo não foi vista, o grupo inteiro conta como "não visto".
           if (!isSeen) grouped[userId]!['all_seen'] = false;
         }
       }
@@ -151,7 +145,6 @@ class StoryService {
         'viewer_id': myId,
       });
     } on PostgrestException catch (e) {
-      // Já visto antes (conflito de chave primária) — ignora silenciosamente.
       if (e.code != '23505') rethrow;
     }
   }
