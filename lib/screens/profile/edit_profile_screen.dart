@@ -10,10 +10,14 @@ class EditProfileScreen extends StatefulWidget {
     super.key,
     required this.currentName,
     required this.currentAvatarUrl,
+    required this.currentUsername,
+    required this.usernameChangedAt,
   });
 
   final String currentName;
   final String? currentAvatarUrl;
+  final String currentUsername;
+  final String? usernameChangedAt;
 
   @override
   State<EditProfileScreen> createState() => _EditProfileScreenState();
@@ -22,8 +26,24 @@ class EditProfileScreen extends StatefulWidget {
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final _profileService = ProfileService();
   late final _nameController = TextEditingController(text: widget.currentName);
+  late final _usernameController = TextEditingController(text: widget.currentUsername);
   File? _newAvatarFile;
   bool _saving = false;
+
+  bool get _canChangeUsername {
+    if (widget.usernameChangedAt == null) return true;
+    final changedAt = DateTime.tryParse(widget.usernameChangedAt!);
+    if (changedAt == null) return true;
+    return DateTime.now().difference(changedAt).inDays >= 30;
+  }
+
+  int get _daysUntilCanChange {
+    if (widget.usernameChangedAt == null) return 0;
+    final changedAt = DateTime.tryParse(widget.usernameChangedAt!);
+    if (changedAt == null) return 0;
+    final elapsed = DateTime.now().difference(changedAt).inDays;
+    return (30 - elapsed).clamp(0, 30);
+  }
 
   Future<void> _pickAvatar() async {
     final picker = ImagePicker();
@@ -47,13 +67,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         displayName: _nameController.text.trim(),
         avatarUrl: avatarUrl,
       );
+
+      final newUsername = _usernameController.text.trim().toLowerCase();
+      if (_canChangeUsername && newUsername != widget.currentUsername) {
+        await _profileService.updateUsername(newUsername);
+      }
+
       if (!mounted) return;
       Navigator.pop(context, true);
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Não foi possível salvar.'),
+          SnackBar(
+            content: Text('$e'),
             backgroundColor: AppColors.error,
           ),
         );
@@ -66,6 +92,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void dispose() {
     _nameController.dispose();
+    _usernameController.dispose();
     super.dispose();
   }
 
@@ -115,7 +142,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(6),
                       decoration: const BoxDecoration(
-                        color: AppColors.primary,
+                        color: AppColors.lineGreen,
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.camera_alt,
@@ -130,6 +157,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           TextField(
             controller: _nameController,
             decoration: const InputDecoration(hintText: 'Seu nome'),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _usernameController,
+            enabled: _canChangeUsername,
+            decoration: InputDecoration(
+              hintText: 'Nome de usuário',
+              prefixText: '@',
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            _canChangeUsername
+                ? 'Pode trocar 1 vez a cada 30 dias.'
+                : 'Você poderá trocar de usuário novamente em $_daysUntilCanChange dia(s).',
+            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
           ),
         ],
       ),
