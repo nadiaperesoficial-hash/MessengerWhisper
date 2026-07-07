@@ -1,10 +1,8 @@
-// lib/core/services/auth_service.dart
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthService {
   final SupabaseClient _client = Supabase.instance.client;
 
-  /// 1. Cadastro: cria a conta e dispara o e-mail com o código de 6 dígitos
   Future<void> signUp({
     required String email,
     required String password,
@@ -17,7 +15,6 @@ class AuthService {
     );
   }
 
-  /// 2. Confirma o código recebido por e-mail após o cadastro
   Future<AuthResponse> verifySignUpCode({
     required String email,
     required String code,
@@ -30,24 +27,36 @@ class AuthService {
     return response;
   }
 
-  /// Login normal com e-mail e senha (depois que a conta já foi verificada)
+  /// Login com e-mail ou username + senha. Se o texto digitado não tiver
+  /// "@", trata como username e resolve o e-mail correspondente primeiro.
   Future<AuthResponse> signIn({
-    required String email,
+    required String identifier,
     required String password,
   }) async {
+    String email = identifier.trim();
+
+    if (!email.contains('@')) {
+      final result = await _client.rpc(
+        'get_email_for_username',
+        params: {'p_username': email.toLowerCase()},
+      );
+      if (result == null) {
+        throw const AuthException('Usuário não encontrado.');
+      }
+      email = result as String;
+    }
+
     final response = await _client.auth.signInWithPassword(
-      email: email.trim(),
+      email: email,
       password: password,
     );
     return response;
   }
 
-  /// 1. Esqueci senha: dispara e-mail com código de 6 dígitos
   Future<void> sendPasswordResetCode({required String email}) async {
     await _client.auth.resetPasswordForEmail(email.trim());
   }
 
-  /// 2. Confirma o código de recuperação (abre uma sessão temporária)
   Future<AuthResponse> verifyPasswordResetCode({
     required String email,
     required String code,
@@ -60,7 +69,6 @@ class AuthService {
     return response;
   }
 
-  /// 3. Define a nova senha (chamado logo após verifyPasswordResetCode)
   Future<UserResponse> updatePassword({required String newPassword}) async {
     final response = await _client.auth.updateUser(
       UserAttributes(password: newPassword),
