@@ -18,13 +18,13 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _authService = AuthService();
-  final _emailController = TextEditingController();
+  final _identifierController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _loading = false;
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _identifierController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -35,10 +35,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       await _authService.signIn(
-        email: _emailController.text,
+        identifier: _identifierController.text,
         password: _passwordController.text,
       );
-      // AuthGate detecta a sessão automaticamente e troca pro Dashboard.
     } on AuthException catch (e) {
       if (e.message.toLowerCase().contains('email not confirmed')) {
         if (!mounted) return;
@@ -46,14 +45,16 @@ class _LoginScreenState extends State<LoginScreen> {
           context,
           MaterialPageRoute(
             builder: (_) => VerifyCodeScreen(
-              email: _emailController.text.trim(),
+              email: _identifierController.text.trim(),
               flow: OtpFlow.signup,
             ),
           ),
         );
         return;
       }
-      _showError('E-mail ou senha inválidos.');
+      _showError(e.message.contains('Usuário não encontrado')
+          ? 'Usuário não encontrado.'
+          : 'E-mail/usuário ou senha inválidos.');
     } catch (_) {
       _showError('Não foi possível entrar. Tente novamente.');
     } finally {
@@ -82,7 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   height: 84,
                   width: 84,
                   decoration: const BoxDecoration(
-                    color: AppColors.primary,
+                    color: AppColors.lineGreen,
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.chat_bubble_rounded,
@@ -99,17 +100,16 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Entre com seu e-mail e senha',
+                  'Entre com seu e-mail, usuário e senha',
                   style: TextStyle(fontSize: 15, color: AppColors.textSecondary),
                 ),
                 const SizedBox(height: 36),
                 AuthTextField(
-                  controller: _emailController,
-                  hint: 'E-mail',
-                  prefixIcon: Icons.email_outlined,
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (v) => (v == null || !v.contains('@'))
-                      ? 'Digite um e-mail válido'
+                  controller: _identifierController,
+                  hint: 'E-mail ou usuário',
+                  prefixIcon: Icons.person_outline,
+                  validator: (v) => (v == null || v.trim().isEmpty)
+                      ? 'Digite seu e-mail ou usuário'
                       : null,
                 ),
                 const SizedBox(height: 16),
