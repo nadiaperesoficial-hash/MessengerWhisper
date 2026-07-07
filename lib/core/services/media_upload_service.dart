@@ -32,13 +32,7 @@ class MediaUploadService {
       throw Exception('Resposta inesperada da função: $data');
     }
 
-    // Passa o arquivo direto (File), não os bytes já lidos.
-    await _clientB.storage.from('media').uploadToSignedUrl(
-          path,
-          token,
-          file,
-          fileOptions: raw_supabase.FileOptions(contentType: 'image/$ext'),
-        );
+    await _clientB.storage.from('media').uploadToSignedUrl(path, token, file);
 
     return publicUrl;
   }
