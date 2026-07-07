@@ -49,8 +49,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           }
           final profile = snapshot.data ?? {};
           final name = profile['display_name'] ?? 'Usuário';
+          final username = profile['username'];
           final email = profile['email'] ?? '';
           final avatar = profile['avatar_url'];
+          final usernameChangedAt = profile['username_changed_at'];
 
           return RefreshIndicator(
             onRefresh: _refresh,
@@ -84,6 +86,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 builder: (_) => EditProfileScreen(
                                   currentName: name,
                                   currentAvatarUrl: avatar,
+                                  currentUsername: username ?? '',
+                                  usernameChangedAt: usernameChangedAt,
                                 ),
                               ),
                             );
@@ -92,7 +96,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           child: Container(
                             padding: const EdgeInsets.all(6),
                             decoration: const BoxDecoration(
-                              color: AppColors.primary,
+                              color: AppColors.lineGreen,
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(Icons.edit,
@@ -114,6 +118,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                 ),
+                if (username != null) ...[
+                  const SizedBox(height: 2),
+                  Center(
+                    child: Text(
+                      '@$username',
+                      style: const TextStyle(
+                        color: AppColors.lineGreen,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 4),
                 Center(
                   child: Text(
