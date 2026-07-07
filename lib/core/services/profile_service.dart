@@ -37,8 +37,6 @@ class ProfileService {
     await _client.from('profiles').update(updates).eq('id', userId);
   }
 
-  /// Troca o username. O banco recusa (via trigger) se ainda não passou
-  /// 30 dias da última troca, então repassamos a mensagem de erro do Postgres.
   Future<void> updateUsername(String newUsername) async {
     final userId = _client.auth.currentUser!.id;
     final clean = newUsername.trim().toLowerCase();
@@ -53,7 +51,6 @@ class ProfileService {
   }
 
   Future<String> uploadAvatar(File file) async {
-    final userId = _client.auth.currentUser!.id;
     final ext = file.path.split('.').last.toLowerCase();
 
     final response = await _client.functions.invoke(
@@ -75,12 +72,7 @@ class ProfileService {
     }
 
     final bytes = await file.readAsBytes();
-    await _clientB.storage.from('media').uploadToSignedUrl(
-          path,
-          token,
-          bytes,
-          fileOptions: raw_supabase.FileOptions(contentType: 'image/$ext'),
-        );
+    await _clientB.storage.from('media').uploadToSignedUrl(path, token, bytes);
 
     return publicUrl;
   }
