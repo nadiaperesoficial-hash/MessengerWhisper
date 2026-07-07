@@ -46,23 +46,6 @@ class _HomeState extends State<Home> {
     setState(_reloadChats);
   }
 
-  String _formatDay(String? isoDate) {
-    if (isoDate == null) return '';
-    final date = DateTime.tryParse(isoDate);
-    if (date == null) return '';
-    final now = DateTime.now();
-    final isToday = date.year == now.year &&
-        date.month == now.month &&
-        date.day == now.day;
-    final yesterday = now.subtract(const Duration(days: 1));
-    final isYesterday = date.year == yesterday.year &&
-        date.month == yesterday.month &&
-        date.day == yesterday.day;
-    if (isToday) return 'Today';
-    if (isYesterday) return 'Yesterday';
-    return DateFormat('MMM d').format(date);
-  }
-
   String _formatTime(String? isoDate) {
     if (isoDate == null) return '';
     final date = DateTime.tryParse(isoDate);
@@ -107,7 +90,7 @@ class _HomeState extends State<Home> {
         children: <Widget>[
           const Padding(padding: EdgeInsets.fromLTRB(0.0, 3.0, 0.0, 8.0)),
           SizedBox(
-            height: 220.0,
+            height: 108.0,
             child: FutureBuilder<List<Map<String, dynamic>>>(
               future: _storiesFuture,
               builder: (context, snapshot) {
@@ -115,6 +98,7 @@ class _HomeState extends State<Home> {
 
                 return ListView.builder(
                   scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
                   itemCount: stories.length + 1,
                   itemBuilder: (context, position) {
                     if (position == 0) {
@@ -124,11 +108,7 @@ class _HomeState extends State<Home> {
                     return _StoryTile(
                       name: story['name'] ?? 'Usuário',
                       profileImageUrl: story['avatar_url'],
-                      storyImageUrl: story['latest_type'] == 'image'
-                          ? story['latest_media_url']
-                          : null,
-                      day: _formatDay(story['latest_created_at']),
-                      time: _formatTime(story['latest_created_at']),
+                      seen: story['all_seen'] == true,
                       onTap: () async {
                         await Navigator.push(
                           context,
@@ -148,6 +128,7 @@ class _HomeState extends State<Home> {
               },
             ),
           ),
+          const Divider(height: 1),
           Expanded(
             child: RefreshIndicator(
               onRefresh: _refreshChats,
@@ -276,41 +257,39 @@ class _AddStoryTile extends StatelessWidget {
         onAdded();
       },
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(5.0, 5.0, 5.0, 5.0),
+        padding: const EdgeInsets.symmetric(horizontal: 8),
         child: SizedBox(
-          width: 100.0,
-          height: 210.0,
-          child: Stack(
-            alignment: Alignment.center,
-            children: <Widget>[
-              Container(
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-                width: 100.0,
-                height: 140.0,
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(5.0, 65.0, 5.0, 0.0),
-                child: Container(
-                  width: 50.0,
-                  height: 50.0,
-                  decoration: BoxDecoration(
-                    color: AppColors.lineGreen,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 3.0),
+          width: 68,
+          child: Column(
+            children: [
+              Stack(
+                children: [
+                  const CircleAvatar(
+                    radius: 32,
+                    backgroundColor: AppColors.surface,
+                    child: Icon(Icons.person, color: AppColors.textSecondary, size: 28),
                   ),
-                  child: const Icon(Icons.add, color: Colors.white),
-                ),
+                  Positioned(
+                    right: 0,
+                    bottom: 0,
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        color: AppColors.lineGreen,
+                        shape: BoxShape.circle,
+                        border: Border.fromBorderSide(BorderSide(color: Colors.white, width: 2)),
+                      ),
+                      padding: const EdgeInsets.all(3),
+                      child: const Icon(Icons.add, size: 14, color: Colors.white),
+                    ),
+                  ),
+                ],
               ),
-              const Positioned(
-                bottom: 20,
-                child: Text(
-                  'Tap to\nadd Story',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: AppColors.textSecondary),
-                ),
+              const SizedBox(height: 6),
+              const Text(
+                'Seu story',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 12, color: AppColors.textPrimary),
               ),
             ],
           ),
@@ -324,17 +303,13 @@ class _StoryTile extends StatelessWidget {
   const _StoryTile({
     required this.name,
     required this.profileImageUrl,
-    required this.storyImageUrl,
-    required this.day,
-    required this.time,
+    required this.seen,
     required this.onTap,
   });
 
   final String name;
   final String? profileImageUrl;
-  final String? storyImageUrl;
-  final String day;
-  final String time;
+  final bool seen;
   final VoidCallback onTap;
 
   @override
@@ -342,61 +317,52 @@ class _StoryTile extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(5.0, 5.0, 5.0, 5.0),
+        padding: const EdgeInsets.symmetric(horizontal: 8),
         child: SizedBox(
-          width: 100.0,
-          height: 210.0,
-          child: Stack(
-            alignment: Alignment.center,
-            children: <Widget>[
+          width: 68,
+          child: Column(
+            children: [
               Container(
+                width: 68,
+                height: 68,
+                padding: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  image: storyImageUrl != null
-                      ? DecorationImage(
-                          image: CachedNetworkImageProvider(storyImageUrl!),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
-                  borderRadius: BorderRadius.circular(10.0),
+                  shape: BoxShape.circle,
+                  gradient: seen
+                      ? null
+                      : const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Color(0xFF2ECC71),
+                            Color(0xFF00C300),
+                          ],
+                        ),
+                  color: seen ? AppColors.border : null,
                 ),
-                width: 100.0,
-                height: 140.0,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(5.0, 85.0, 5.0, 5.0),
-                  child: Text(
-                    name,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18.0,
-                      color: Colors.white,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
+                child: Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                  ),
+                  child: CircleAvatar(
+                    backgroundColor: AppColors.surface,
+                    backgroundImage: profileImageUrl != null
+                        ? CachedNetworkImageProvider(profileImageUrl!)
+                        : null,
+                    child: profileImageUrl == null
+                        ? Text(name.isNotEmpty ? name[0].toUpperCase() : '?')
+                        : null,
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(5.0, 65.0, 5.0, 0.0),
-                child: CircleAvatar(
-                  radius: 25,
-                  backgroundColor: AppColors.surface,
-                  backgroundImage: profileImageUrl != null
-                      ? CachedNetworkImageProvider(profileImageUrl!)
-                      : null,
-                  child: profileImageUrl == null
-                      ? Text(name.isNotEmpty ? name[0].toUpperCase() : '?')
-                      : null,
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(5.0, 140.0, 5.0, 0.0),
-                child: Center(child: Text(day)),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(5.0, 172.0, 5.0, 0.0),
-                child: Text(time),
+              const SizedBox(height: 6),
+              Text(
+                name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 12, color: AppColors.textPrimary),
               ),
             ],
           ),
