@@ -1,13 +1,46 @@
 import 'dart:io';
+import 'package:supabase/supabase.dart' as raw_supabase;
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'media_upload_service.dart';
+import '../config/env.dart';
 
 class StoryService {
   final SupabaseClient _client = Supabase.instance.client;
-  final MediaUploadService _mediaUploadService = MediaUploadService();
+
+  final raw_supabase.SupabaseClient _clientB = raw_supabase.SupabaseClient(
+    Env.supabaseBUrl,
+    Env.supabaseBAnonKey,
+  );
 
   Future<String> uploadStoryImage(File file) async {
-    return _mediaUploadService.uploadImage(file, folder: 'stories');
+    final ext = file.path.split('.').last.toLowerCase();
+
+    final response = await _client.functions.invoke(
+      'hyper-worker',
+      body: {'fileExt': ext, 'folder': 'stories'},
+    );
+
+    if (response.status != 200) {
+      throw Exception('Falha ao preparar upload (${response.status}): ${response.data}');
+    }
+
+    final data = response.data;
+    final path = data is Map ? data['path'] as String? : null;
+    final token = data is Map ? data['token'] as String? : null;
+    final publicUrl = data is Map ? data['publicUrl'] as String? : null;
+
+    if (path == null || token == null || publicUrl == null) {
+      throw Exception('Resposta inesperada da função: $data');
+    }
+
+    final bytes = await file.readAsBytes();
+    await _clientB.storage.from('media').uploadToSignedUrl(
+          path,
+          token,
+          bytes,
+          fileOptions: raw_supabase.FileOptions(contentType: 'image/$ext'),
+        );
+
+    return publicUrl;
   }
 
   Future<void> createImageStory({
@@ -41,28 +74,14 @@ class StoryService {
     });
   }
 
-  Future<int> debugCountStoriesNoJoin() async {
-    final rows = await _client
-        .from('stories')
-        .select('id')
-        .gt('expires_at', DateTime.now().toUtc().toIso8601String());
-    return (rows as List).length;
-  }
-
-  Future<int> debugCountStoriesWithJoin() async {
-    final rows = await _client
-        .from('stories')
-        .select('id, profiles!stories_user_id_fkey(id)')
-        .gt('expires_at', DateTime.now().toUtc().toIso8601String());
-    return (rows as List).length;
-  }
-
-  Future<List<Map<String, dynamic>>> fetchGroupedStories() async {
+  Future<List<Map<String, dynamic>>> fetchGroupedStories() {
     return _withRetryOnClockSkew(() => _fetchGroupedStoriesInternal());
   }
 
   Future<List<Map<String, dynamic>>> _fetchGroupedStoriesInternal() async {
     try {
+      final myId = _client.auth.currentUser!.id;
+
       final rows = await _client
           .from('stories')
           .select('*, profiles!stories_user_id_fkey(id, display_name, avatar_url)')
@@ -70,10 +89,25 @@ class StoryService {
           .order('created_at', ascending: false);
 
       final list = List<Map<String, dynamic>>.from(rows);
+      if (list.isEmpty) return [];
+
+      final storyIds = list.map((s) => s['id'] as String).toList();
+      final views = await _client
+          .from('story_views')
+          .select('story_id')
+          .eq('viewer_id', myId)
+          .inFilter('story_id', storyIds);
+      final viewedIds = List<Map<String, dynamic>>.from(views)
+          .map((v) => v['story_id'] as String)
+          .toSet();
+
       final Map<String, Map<String, dynamic>> grouped = {};
 
       for (final story in list) {
         final userId = story['user_id'] as String;
+        final storyId = story['id'] as String;
+        final isSeen = viewedIds.contains(storyId);
+
         if (!grouped.containsKey(userId)) {
           grouped[userId] = {
             'user_id': userId,
@@ -83,9 +117,12 @@ class StoryService {
             'latest_type': story['type'],
             'latest_created_at': story['created_at'],
             'count': 1,
+            'all_seen': isSeen,
           };
         } else {
           grouped[userId]!['count'] = (grouped[userId]!['count'] as int) + 1;
+          // Se qualquer story do grupo não foi vista, o grupo inteiro conta como "não visto".
+          if (!isSeen) grouped[userId]!['all_seen'] = false;
         }
       }
 
@@ -104,6 +141,19 @@ class StoryService {
         .order('created_at', ascending: true);
 
     return List<Map<String, dynamic>>.from(rows);
+  }
+
+  Future<void> markStoryAsViewed(String storyId) async {
+    final myId = _client.auth.currentUser!.id;
+    try {
+      await _client.from('story_views').insert({
+        'story_id': storyId,
+        'viewer_id': myId,
+      });
+    } on PostgrestException catch (e) {
+      // Já visto antes (conflito de chave primária) — ignora silenciosamente.
+      if (e.code != '23505') rethrow;
+    }
   }
 
   Future<bool> isLikedByMe(String storyId) async {
@@ -133,9 +183,6 @@ class StoryService {
         .eq('user_id', myId);
   }
 
-  /// Tenta de novo automaticamente se o servidor rejeitar o token por
-  /// diferença momentânea de horário (erro PGRST303), renovando a sessão
-  /// antes de repetir a chamada.
   Future<T> _withRetryOnClockSkew<T>(Future<T> Function() action) async {
     try {
       return await action();
